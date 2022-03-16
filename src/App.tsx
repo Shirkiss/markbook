@@ -10,7 +10,7 @@ export const App = () => {
     let saveLinkPage = (document.getElementById('save-link-page') as HTMLInputElement);
     let listContainer = (document.getElementById('listContainer') as HTMLInputElement);
     let userLinksPage = (document.getElementById('user-links-page') as HTMLInputElement);
-    
+
     /**
      * Get current URL
      */
@@ -21,6 +21,13 @@ export const App = () => {
             const url = tabs[0].url || '';
             setUrl(url);
         });
+
+        const fetchData = async () => {
+            const result = await fetch('/hello');
+            const body = await result.json();
+            console.log(body);
+        };
+        fetchData();
     }, []);
 
 
@@ -112,8 +119,10 @@ export const App = () => {
         <div className="App">
             <header className="App-header">
                 <div id="save-link-page">
-                    <p>Link:</p>
-                    <input type="text" id="urlBox" value={url}/>
+                    <div>
+                        <label htmlFor="linkName">Link:</label>
+                        <input type="text" id="urlBox" value={url}/>
+                    </div>
                     <div>
                         <label htmlFor="linkName">Name:</label>
                         <input type="text" id="linkName"/>
@@ -131,7 +140,6 @@ export const App = () => {
                     <button onClick={ChangeToLinksView}>Your links</button>
                 </div>
                 <div id="user-links-page" style={{"display": "none"}}>
-                    <h4>Your links: </h4>
                     <ul id="listContainer">
                     </ul>
                     <button onClick={ChangeToSaveLinkView}>Back</button>
