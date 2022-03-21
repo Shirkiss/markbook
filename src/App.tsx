@@ -23,7 +23,12 @@ export const App = () => {
         });
 
         const fetchData = async () => {
-            const result = await fetch('/hello');
+            const result = await fetch('http://localhost:8000/hello', {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
             const body = await result.json();
             console.log(body);
         };
