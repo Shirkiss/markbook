@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const redisManager = require('../redisManager');
 
 const setHeaders = (res) => {
     res.setHeader('Access-Control-Allow-Origin', 'chrome-extension://midgecoohkdmehedgabcdpbgjjachkkc');
@@ -13,33 +14,29 @@ router.use('/hello', (req, res) => {
     res.send({message: "hello"});
 });
 
-router.use('/saveLink', (req, res) => {
+router.post('/saveLink', (req, res) => {
+    let {keywords, url, name, comment} = req.body;
+    let keywordsSplit = keywords.split(",");
+    redisManager.addLink(url, name, keywordsSplit, comment);
     setHeaders(res);
-    chrome.storage.sync.get("links", ({links}) => {
-        let {keywords, url, name, comment} = req.body;
-        links[url] = {name, keywords, comment};
-        chrome.storage.sync.set({links});
-    });
     console.log("saved link");
     res.send({message: "Link saved successfully"});
 });
 
 router.use('/removeLink', (req, res) => {
     setHeaders(res);
-    chrome.storage.sync.get("links", ({links}) => {
-        delete links[urlBox.value];
-        chrome.storage.sync.set({links});
-        console.log(JSON.stringify(links));
-    });
+    let {url} = req.body;
+    redisManager.removeLink(url);
+    setHeaders(res);
     console.log("removed link");
     res.send({message: "Link removed successfully"});
 });
 
-router.use('/getAllLinks', (req, res) => {
+router.use('/getAllLinks', async (req, res) => {
     setHeaders(res);
-    chrome.storage.sync.get("links", ({links}) => {
-        res.send({links});
-    });
+    const links = await redisManager.getAllLinks();
+    console.log("sent all links");
+    res.send({links});
 });
 
 

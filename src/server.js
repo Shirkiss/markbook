@@ -1,12 +1,17 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const linksManager = require('./routes/links');
 const path = require('path');
 
 const app = express();
 
 app.use(express.static(path.join(__dirname, '/build')));
-app.use(bodyParser.json());
+
+// parse application/x-www-form-urlencoded
+app.use(express.urlencoded({extended: false}));
+
+// parse application/json
+app.use(express.json());
+
 app.use('/', linksManager);
 
 app.get('*', (req, res) => {
