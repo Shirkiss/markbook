@@ -116,9 +116,13 @@ export const App = () => {
         //             Accept: 'application/json',
         //         },
         //     });
-        //     console.log(result);
         //     const body = await result.json();
-        //     console.log(body);
+        //     const links = body.links;
+        //     let linksNames = Object.keys(links);
+        //     for (let i = 0; i < linksNames.length; i++) {
+        //         let linkContent = JSON.parse(links[linksNames[i]]);
+        //         addLinkToList(listContainer, linksNames[i], linkContent.name, linkContent.comment)
+        //     }
         // };
         // fetchData();
     };
