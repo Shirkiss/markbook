@@ -22,5 +22,9 @@ const removeLink = async (userId, link) => {
     await client.HDEL(`links:${userId}`, link);
 };
 
+const removeAllLinks = async (userId) => {
+    await client.DEL(`links:${userId}`);
+};
 
-module.exports = {getLink, getAllLinks, addLink, removeLink, start};
+
+module.exports = {getLink, getAllLinks, addLink, removeLink, start, removeAllLinks};

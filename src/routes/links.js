@@ -29,9 +29,16 @@ router.use('/removeLink/:id', (req, res) => {
     let {url} = req.body;
     const userId = req.params.id;
     redisManager.removeLink(userId, url);
-    setHeaders(res);
     console.log("removed link");
     res.send({message: "Link removed successfully"});
+});
+
+router.use('/removeAllLinks/:id', (req, res) => {
+    setHeaders(res);
+    const userId = req.params.id;
+    redisManager.removeAllLinks(userId);
+    console.log("removed all links");
+    res.send({message: "All links removed successfully"});
 });
 
 router.use('/getAllLinks/:id', async (req, res) => {

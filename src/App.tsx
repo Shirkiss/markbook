@@ -68,14 +68,14 @@ export const App = () => {
 
         // redis
         // const fetchData = async () => {
-        //     let data = new URLSearchParams({"url": urlBox.value});
+            // let data = new URLSearchParams({"url": urlBox.value});
         //     await fetch(`http://localhost:8000/removeLink/${userId}`, {
         //         method: 'POST',
         //         headers: {
         //             'Accept': 'application/json',
         //             'Content-Type': 'application/x-www-form-urlencoded'
         //         },
-        //         body: data,
+                // body: data,
         //     });
         // };
         // fetchData();
