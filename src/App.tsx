@@ -12,6 +12,7 @@ export const App = () => {
     let userLinksPage = (document.getElementById('user-links-page') as HTMLInputElement);
 
     const userId = 1;
+    const db = process.env["DB"];
 
     /**
      * Get current URL
@@ -31,27 +32,29 @@ export const App = () => {
      */
     const saveLink = () => {
 
-        // local storage
-        chrome.storage.sync.get("links", ({links}) => {
-            let keywords = keywordsBox.value.split(",");
-            links[urlBox.value] = {"name": nameBox.value, "keywords": keywords, "comment": commentBox.value};
-            chrome.storage.sync.set({links});
-            console.log(JSON.stringify(links));
-        });
-
-        // redis
-        // const fetchData = async () => {
-        //     let data = new URLSearchParams({"name": nameBox.value, "keywords": keywordsBox.value, "comment": commentBox.value, "link": urlBox.value});
-        //     await fetch(`http://localhost:8000/saveLink/${userId}`, {
-        //         method: 'POST',
-        //         headers: {
-        //             'Accept': 'application/json',
-        //             'Content-Type': 'application/x-www-form-urlencoded'
-        //         },
-        //         body: data,
-        //     });
-        // };
-        // fetchData();
+        if (db === 'local-storage') {
+            // local storage
+            chrome.storage.sync.get("links", ({links}) => {
+                let keywords = keywordsBox.value.split(",");
+                links[urlBox.value] = {"name": nameBox.value, "keywords": keywords, "comment": commentBox.value};
+                chrome.storage.sync.set({links});
+                console.log(JSON.stringify(links));
+            });
+        } else {
+            // redis
+            const fetchData = async () => {
+                let data = new URLSearchParams({"name": nameBox.value, "keywords": keywordsBox.value, "comment": commentBox.value, "link": urlBox.value});
+                await fetch(`http://localhost:8000/saveLink/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data,
+                });
+            };
+            fetchData();
+        }
         ChangeToLinksView();
     };
 
@@ -59,26 +62,28 @@ export const App = () => {
      * Remove link
      */
     const removeLink = () => {
-        // local storage
-        chrome.storage.sync.get("links", ({links}) => {
-            delete links[urlBox.value];
-            chrome.storage.sync.set({links});
-            console.log(JSON.stringify(links));
-        });
-
-        // redis
-        // const fetchData = async () => {
-            // let data = new URLSearchParams({"url": urlBox.value});
-        //     await fetch(`http://localhost:8000/removeLink/${userId}`, {
-        //         method: 'POST',
-        //         headers: {
-        //             'Accept': 'application/json',
-        //             'Content-Type': 'application/x-www-form-urlencoded'
-        //         },
-                // body: data,
-        //     });
-        // };
-        // fetchData();
+        if (db === 'local-storage') {
+            // local storage
+            chrome.storage.sync.get("links", ({links}) => {
+                delete links[urlBox.value];
+                chrome.storage.sync.set({links});
+                console.log(JSON.stringify(links));
+            });
+        } else {
+            // redis
+            const fetchData = async () => {
+            let data = new URLSearchParams({"url": urlBox.value});
+                await fetch(`http://localhost:8000/removeLink/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+            body: data,
+                });
+            };
+            fetchData();
+        }
         ChangeToLinksView();
     };
 
@@ -101,32 +106,34 @@ export const App = () => {
 
 
     const updateListContainer = () => {
-        // local storage
-        listContainer.innerHTML = '';
-        chrome.storage.sync.get("links", ({links}) => {
-            let linksNames = Object.keys(links);
-            for (let i = 0; i < linksNames.length; i++) {
-                addLinkToList(listContainer, linksNames[i], links[linksNames[i]].name, links[linksNames[i]].comment)
-            }
-        });
-
-        // redis
-        // const fetchData = async () => {
-        //     const result = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
-        //         method: 'GET',
-        //         headers: {
-        //             Accept: 'application/json',
-        //         },
-        //     });
-        //     const body = await result.json();
-        //     const links = body.links;
-        //     let linksNames = Object.keys(links);
-        //     for (let i = 0; i < linksNames.length; i++) {
-        //         let linkContent = JSON.parse(links[linksNames[i]]);
-        //         addLinkToList(listContainer, linksNames[i], linkContent.name, linkContent.comment)
-        //     }
-        // };
-        // fetchData();
+        if (db === 'local-storage') {
+            // local storage
+            listContainer.innerHTML = '';
+            chrome.storage.sync.get("links", ({links}) => {
+                let linksNames = Object.keys(links);
+                for (let i = 0; i < linksNames.length; i++) {
+                    addLinkToList(listContainer, linksNames[i], links[linksNames[i]].name, links[linksNames[i]].comment)
+                }
+            });
+        } else {
+            // redis
+            const fetchData = async () => {
+                const result = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+                const body = await result.json();
+                const links = body.links;
+                let linksNames = Object.keys(links);
+                for (let i = 0; i < linksNames.length; i++) {
+                    let linkContent = JSON.parse(links[linksNames[i]]);
+                    addLinkToList(listContainer, linksNames[i], linkContent.name, linkContent.comment)
+                }
+            };
+            fetchData();
+        }
     };
 
     const addLinkToList = (listContainer: HTMLInputElement, linkHref: string, name: string, comment: string) => {
