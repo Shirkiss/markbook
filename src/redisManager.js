@@ -1,31 +1,26 @@
 const redis = require('redis');
 const client = redis.createClient();
 
-
-const addLink = async (link, name, keywords, comment) => {
-    const data = {name, keywords, comment};
+const start = async () => {
     await client.connect();
-    await client.HSET('links:1', link, JSON.stringify(data));
-    client.quit();
 };
 
-const getAllLinks = async () => {
-    await client.connect();
-    const links = await client.HGETALL('links:1');
-    client.quit();
-    return links;
+const addLink = async (userId, link, name, keywords, comment) => {
+    const data = {name, keywords, comment};
+    await client.HSET(`links:${userId}`, link, JSON.stringify(data));
+};
+
+const getAllLinks = async (userId) => {
+    return await client.HGETALL(`links:${userId}`);
 };
 
 const getLink = async (link) => {
-    const savedLink = await client.HGET('links:1', link);
-    console.log(savedLink);
+    return await client.HGET('links:1', link);
 };
 
-const removeLink = async (link) => {
-    await client.connect();
-    await client.HDEL('links:1', link);
-    client.quit()
+const removeLink = async (userId, link) => {
+    await client.HDEL(`links:${userId}`, link);
 };
 
 
-module.exports = {getLink, getAllLinks, addLink, removeLink};
+module.exports = {getLink, getAllLinks, addLink, removeLink, start};

@@ -6,7 +6,7 @@ const setHeaders = (res) => {
     res.setHeader('Access-Control-Allow-Origin', 'chrome-extension://midgecoohkdmehedgabcdpbgjjachkkc');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
-}
+};
 
 router.use('/hello', (req, res) => {
     setHeaders(res);
@@ -14,27 +14,30 @@ router.use('/hello', (req, res) => {
     res.send({message: "hello"});
 });
 
-router.post('/saveLink', (req, res) => {
-    let {keywords, url, name, comment} = req.body;
+router.post('/saveLink/:id', (req, res) => {
+    let {keywords, link, name, comment} = req.body;
+    const userId = req.params.id;
     let keywordsSplit = keywords.split(",");
-    redisManager.addLink(url, name, keywordsSplit, comment);
+    redisManager.addLink(userId, link, name, keywordsSplit, comment);
     setHeaders(res);
     console.log("saved link");
     res.send({message: "Link saved successfully"});
 });
 
-router.use('/removeLink', (req, res) => {
+router.use('/removeLink/:id', (req, res) => {
     setHeaders(res);
     let {url} = req.body;
-    redisManager.removeLink(url);
+    const userId = req.params.id;
+    redisManager.removeLink(userId, url);
     setHeaders(res);
     console.log("removed link");
     res.send({message: "Link removed successfully"});
 });
 
-router.use('/getAllLinks', async (req, res) => {
+router.use('/getAllLinks/:id', async (req, res) => {
     setHeaders(res);
-    const links = await redisManager.getAllLinks();
+    const userId = req.params.id;
+    const links = await redisManager.getAllLinks(userId);
     console.log("sent all links");
     res.send({links});
 });

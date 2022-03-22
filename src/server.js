@@ -1,8 +1,10 @@
 const express = require('express');
 const linksManager = require('./routes/links');
 const path = require('path');
+const redisManager = require('./redisManager');
 
 const app = express();
+redisManager.start();
 
 app.use(express.static(path.join(__dirname, '/build')));
 

@@ -11,6 +11,8 @@ export const App = () => {
     let listContainer = (document.getElementById('listContainer') as HTMLInputElement);
     let userLinksPage = (document.getElementById('user-links-page') as HTMLInputElement);
 
+    const userId = 1;
+
     /**
      * Get current URL
      */
@@ -39,8 +41,8 @@ export const App = () => {
 
         // redis
         // const fetchData = async () => {
-        //     let data = new URLSearchParams({"name": nameBox.value, "keywords": keywordsBox.value, "comment": commentBox.value, "url": urlBox.value});
-        //     await fetch('http://localhost:8000/saveLink', {
+        //     let data = new URLSearchParams({"name": nameBox.value, "keywords": keywordsBox.value, "comment": commentBox.value, "link": urlBox.value});
+        //     await fetch(`http://localhost:8000/saveLink/${userId}`, {
         //         method: 'POST',
         //         headers: {
         //             'Accept': 'application/json',
@@ -67,7 +69,7 @@ export const App = () => {
         // redis
         // const fetchData = async () => {
         //     let data = new URLSearchParams({"url": urlBox.value});
-        //     await fetch('http://localhost:8000/removeLink', {
+        //     await fetch(`http://localhost:8000/removeLink/${userId}`, {
         //         method: 'POST',
         //         headers: {
         //             'Accept': 'application/json',
@@ -110,7 +112,7 @@ export const App = () => {
 
         // redis
         // const fetchData = async () => {
-        //     const result = await fetch('http://localhost:8000/getAllLinks', {
+        //     const result = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
         //         method: 'GET',
         //         headers: {
         //             Accept: 'application/json',
