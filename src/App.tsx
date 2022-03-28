@@ -1,4 +1,8 @@
 import React, {useEffect, useState} from 'react';
+import Sidebar from './components/Sidebar'
+//import Sidebar from "../components/Sidebar.tsx";
+
+
 import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import 'react-pro-sidebar/dist/css/styles.css';
 import './App.css';
@@ -8,7 +12,7 @@ export const App = () => {
         const [urlValue, setUrl] = useState<string>('');
        const [name, setName] = useState<string>('');
          const [keywords, setKeywords] = useState<string>('');
-         const [comment, setComment] = useState<string>('');
+         const [caption, setCaption] = useState<string>('');
          const [tagList, setTagList] = useState<object>({});
          const [editMode, setEditMode] = useState<boolean>(true);
          const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
@@ -40,14 +44,14 @@ export const App = () => {
         if (db === 'local-storage') {
             // local storage
             chrome.storage.sync.get("links", ({links}) => {
-                links[urlValue] = {"name": name, "keywords": keywords.split(","), "comment": comment};
+                links[urlValue] = {"name": name, "keywords": keywords.split(","), "comment": caption};
                 chrome.storage.sync.set({links});
                 console.log(JSON.stringify(links));
             });
         } else {
             // redis
             const fetchData = async () => {
-                let data = new URLSearchParams({"name": name, "keywords": keywords, "comment": comment, "link": urlValue});
+                let data = new URLSearchParams({"name": name, "keywords": keywords, "comment": caption, "link": urlValue});
                 await fetch(`http://localhost:8000/saveLink/${userId}`, {
                     method: 'POST',
                     headers: {
@@ -93,38 +97,6 @@ export const App = () => {
 
 
 
-//     const updateListContainer = () => {
-//         if (db === 'local-storage') {
-//             // local storage
-//             listContainer.innerHTML = '';
-//             chrome.storage.sync.get("links", ({links}) => {
-//                 let linksNames = Object.keys(links);
-//                 for (let i = 0; i < linksNames.length; i++) {
-//                     addLinkToList(listContainer, linksNames[i], links[linksNames[i]].name, links[linksNames[i]].comment)
-//                 }
-//             });
-//         } else {
-//             // redis
-//             const fetchData = async () => {
-//                 const result = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
-//                     method: 'GET',
-//                     headers: {
-//                         Accept: 'application/json',
-//                     },
-//                 });
-//                 const body = await result.json();
-//                 const links = body.links;
-//                 let linksNames = Object.keys(links);
-//                 for (let i = 0; i < linksNames.length; i++) {
-//                     let linkContent = JSON.parse(links[linksNames[i]]);
-//                     addLinkToList(listContainer, linksNames[i], linkContent.name, linkContent.comment)
-//                 }
-//             };
-//             fetchData();
-//         }
-//     };
-
-
     /**
      * Display comment logic
      */
@@ -137,35 +109,29 @@ export const App = () => {
 
     return (
         <div className="App">
-            <ProSidebar>
-              <Menu iconShape="square">
-                <MenuItem active = {currentTab === 'Tab'} ><button onClick={()=>setCurrentTab('Tab')}>Tab</button></MenuItem>
-                <MenuItem active = {currentTab === 'History'} ><button onClick={()=>setCurrentTab('History')}>History</button></MenuItem>
-                <MenuItem active = {currentTab === 'List'} ><button onClick={()=>setCurrentTab('List')}>List</button></MenuItem>
-                </Menu>
-              </ProSidebar>
-                   {currentTab === 'Tab' && <div>
-                   <div>
-                        <label htmlFor="linkName">Link:</label>
-                        <input type="text" id="urlBox" value={urlValue} onChange={e => setUrl(e.target.value)}/>
+                   <Sidebar setCurrentTab={setCurrentTab}/>
+                   {currentTab === 'Tabs' && <div>
+                   <div className="tab_data">
+                        <input type="text" className="tab_input" id="urlBox" value={urlValue} onChange={e => setUrl(e.target.value)}/>
                     </div>
-                    <div>
-                        <label htmlFor="linkName">Name:</label>
-                        <input type="text" id="linkName" value={name} onChange={e => setName(e.target.value)}/>
+                    <div className="tab_data">
+                        <label htmlFor="linkName" className="name_label">Name:</label>
+                        <input type="text" className="tab_input_with_label" id="linkName" value={name} onChange={e => setName(e.target.value)}/>
                     </div>
-                    <div>
-                        <label htmlFor="keywords">Keywords:</label>
-                        <input type="text" id="keywords" value={keywords} onChange={e => setKeywords(e.target.value)}/>
+                    <div className="tab_data">
+                        <textarea id="caption" className="tab_area" placeholder="Caption" name="caption" rows={4} cols={50} onChange={e => setCaption(e.target.value)} />
                     </div>
-                    <div>
-                        <label htmlFor="comment">Comment:</label>
-                        <input type="text" id="comment" value={comment} onChange={e => setComment(e.target.value)}/>
+
+                    <div className="tab_footer">
+                        <div className="tab_checkbox">
+                          <input type="checkbox" id="private" name="scales" />
+                          <label htmlFor="private">Private</label>
+                        </div>
+                        <button className="tab_button" onClick={removeLink}>Remove</button>
+                        <button className="tab_button" onClick={saveLink}>Save</button>
                     </div>
-                    <button onClick={saveLink}>Save</button>
-                    <button onClick={removeLink}>Remove</button>
-                    <button onClick={() => setCurrentTab('List')}>Your links</button>
                 </div> }
-                {currentTab === 'List ' && <div id="user-links-page" style={{"display": "none"}}>
+                {currentTab === 'History ' && <div id="user-links-page" style={{"display": "none"}}>
                         <ul id="listContainer">
                         </ul>
                         <button onClick={() => setCurrentTab('Tab')}>Back</button>
