@@ -64,5 +64,18 @@ router.use('/getAllLinks/:id', async (req, res) => {
     res.send({links});
 });
 
+router.use('/getLink/:id', async (req, res) => {
+    try {
+        setHeaders(res);
+        let {urlValue} = req.body;
+        const userId = req.params.id;
+        const link = await redisManager.getLink(userId, urlValue);
+        res.send({link});
+    } catch (error) {
+        res.statusCode(500);
+        res.send({message: 'Failed to get link', error});
+    }
+});
+
 
 module.exports = router;

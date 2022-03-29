@@ -12,7 +12,8 @@
   },
   "permissions": [
     "tabs",
-    "storage"
+    "storage",
+    "history"
   ],
   "icons": {
     "16": "markbook-icon.png",
