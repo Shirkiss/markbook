@@ -1,14 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import Sidebar from './components/Sidebar'
-//import Sidebar from "../components/Sidebar.tsx";
-
-
-import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
-import 'react-pro-sidebar/dist/css/styles.css';
 import './App.css';
 
 export const App = () => {
-    const [currentTab, setCurrentTab] = useState<string>('Tab');
+    const [currentTab, setCurrentTab] = useState<string>('Tabs');
         const [urlValue, setUrl] = useState<string>('');
        const [name, setName] = useState<string>('');
          const [keywords, setKeywords] = useState<string>('');
