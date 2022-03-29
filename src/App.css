@@ -1,5 +1,49 @@
 .App {
-  text-align: center;
+
+}
+
+.tab_data {
+    width: 100%;
+    margin: 20px;
+}
+
+.tab_input {
+   border-radius: 6px;
+   height: 30px;
+   width: 70%;
+}
+
+.tab_input_with_label {
+    border-radius: 6px;
+    height: 30px;
+    width: 50%;
+}
+
+.tab_area {
+    border-radius: 6px;
+    width: 70%
+}
+
+.name_label {
+    margin-right: 20px;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.tab_footer {
+     bottom: 10px;
+     position: absolute;
+     left: 20px;
+     width: 85%;
+}
+.tab_checkbox {
+    margin-bottom: 10px;
+}
+.tab_button {
+   border-radius: 5px;
+   height: 28px;
+   margin-right: 20px;
+   width: 114px;
 }
 
 .App-logo {
