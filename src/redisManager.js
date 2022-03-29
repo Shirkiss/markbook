@@ -5,9 +5,9 @@ const start = async () => {
     await client.connect();
 };
 
-const addLink = async (userId, link, name, keywords, comment) => {
-    const data = {name, keywords, comment};
-    await client.HSET(`links:${userId}`, link, JSON.stringify(data));
+const addLink = async (userId, urlValue, name, keywords, caption) => {
+    const data = {name, keywords, caption};
+    await client.HSET(`links:${userId}`, urlValue, JSON.stringify(data));
     return await getAllLinks(userId);
 };
 
@@ -15,12 +15,12 @@ const getAllLinks = async (userId) => {
     return await client.HGETALL(`links:${userId}`);
 };
 
-const getLink = async (userId, link) => {
-    return await client.HGET(`links:${userId}`, link);
+const getLink = async (userId, urlValue) => {
+    return await client.HGET(`links:${userId}`, urlValue);
 };
 
-const removeLink = async (userId, link) => {
-    await client.HDEL(`links:${userId}`, link);
+const removeLink = async (userId, urlValue) => {
+    await client.HDEL(`links:${userId}`, urlValue);
     return await getAllLinks(userId);
 };
 

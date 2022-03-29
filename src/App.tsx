@@ -1,16 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import Sidebar from './components/Sidebar'
+import Sidebar from './components/Sidebar';
+import {getFavicon} from './services/services';
 import './App.css';
+
 
 export const App = () => {
     const [currentTab, setCurrentTab] = useState<string>('Tabs');
-        const [urlValue, setUrl] = useState<string>('');
-       const [name, setName] = useState<string>('');
-         const [keywords, setKeywords] = useState<string>('');
-         const [caption, setCaption] = useState<string>('');
-         const [tagList, setTagList] = useState<object>({});
-         const [editMode, setEditMode] = useState<boolean>(true);
-         const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+    const [urlValue, setUrl] = useState<string>('');
+    const [name, setName] = useState<string>('');
+    const [keywords, setKeywords] = useState<string>('');
+    const [caption, setCaption] = useState<string>('');
+    const [tagList, setTagList] = useState<object>({});
+    const [editMode, setEditMode] = useState<boolean>(true);
+    const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
 
 
     const userId = 1;
@@ -21,10 +23,10 @@ export const App = () => {
      */
     useEffect(() => {
         const queryInfo = {active: true, lastFocusedWindow: true};
-        if (urlValue == ''){
+        if (urlValue == '') {
             chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
-                  const url = tabs[0].url || '';
-                  setUrl(url);
+                const url = tabs[0].url || '';
+                setUrl(url);
             });
         }
 
@@ -38,15 +40,20 @@ export const App = () => {
 
         if (db === 'local-storage') {
             // local storage
-            chrome.storage.sync.get("links", ({links}) => {
-                links[urlValue] = {"name": name, "keywords": keywords.split(","), "comment": caption};
+            chrome.storage.sync.get('links', ({links}) => {
+                links[urlValue] = {name, 'keywords': keywords.split(','), caption};
                 chrome.storage.sync.set({links});
                 console.log(JSON.stringify(links));
             });
         } else {
             // redis
             const fetchData = async () => {
-                let data = new URLSearchParams({"name": name, "keywords": keywords, "comment": caption, "link": urlValue});
+                let data = new URLSearchParams({
+                    name,
+                    keywords,
+                    caption,
+                    urlValue
+                });
                 await fetch(`http://localhost:8000/saveLink/${userId}`, {
                     method: 'POST',
                     headers: {
@@ -67,7 +74,7 @@ export const App = () => {
     const removeLink = () => {
         if (db === 'local-storage') {
             // local storage
-            chrome.storage.sync.get("links", ({links}) => {
+            chrome.storage.sync.get('links', ({links}) => {
                 delete links[urlValue];
                 chrome.storage.sync.set({links});
                 console.log(JSON.stringify(links));
@@ -75,14 +82,14 @@ export const App = () => {
         } else {
             // redis
             const fetchData = async () => {
-            let data = new URLSearchParams({"url": urlValue});
+                let data = new URLSearchParams({urlValue});
                 await fetch(`http://localhost:8000/removeLink/${userId}`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-            body: data,
+                    body: data,
                 });
             };
             fetchData();
@@ -91,6 +98,21 @@ export const App = () => {
     };
 
 
+    const getHistory = () => {
+        chrome.history.search({text: '', maxResults: 20}, function (data) {
+            const userHistoryItems: { favicon: string; typedCount?: number | undefined; title?: string | undefined; url?: string | undefined; lastVisitTime?: number | undefined; visitCount?: number | undefined; id: string; }[] = [];
+            data.forEach(function (page) {
+                if (page.url) {
+                    const favicon = getFavicon(page.url);
+                    userHistoryItems.push({
+                        ...page,
+                        favicon: favicon
+                    })
+                }
+            });
+            return userHistoryItems;
+        });
+    };
 
     /**
      * Display comment logic
@@ -104,34 +126,37 @@ export const App = () => {
 
     return (
         <div className="App">
-                   <Sidebar setCurrentTab={setCurrentTab}/>
-                   {currentTab === 'Tabs' && <div>
-                   <div className="tab_data">
-                        <input type="text" className="tab_input" id="urlBox" value={urlValue} onChange={e => setUrl(e.target.value)}/>
-                    </div>
-                    <div className="tab_data">
-                        <label htmlFor="linkName" className="name_label">Name:</label>
-                        <input type="text" className="tab_input_with_label" id="linkName" value={name} onChange={e => setName(e.target.value)}/>
-                    </div>
-                    <div className="tab_data">
-                        <textarea id="caption" className="tab_area" placeholder="Caption" name="caption" rows={4} cols={50} onChange={e => setCaption(e.target.value)} />
-                    </div>
+            <Sidebar setCurrentTab={setCurrentTab}/>
+            {currentTab === 'Tabs' && <div>
+                <div className="tab_data">
+                    <input type="text" className="tab_input" id="urlBox" value={urlValue}
+                           onChange={e => setUrl(e.target.value)}/>
+                </div>
+                <div className="tab_data">
+                    <label htmlFor="linkName" className="name_label">Name:</label>
+                    <input type="text" className="tab_input_with_label" id="linkName" value={name}
+                           onChange={e => setName(e.target.value)}/>
+                </div>
+                <div className="tab_data">
+                    <textarea id="caption" className="tab_area" placeholder="Caption" name="caption" rows={4} cols={50}
+                              onChange={e => setCaption(e.target.value)}/>
+                </div>
 
-                    <div className="tab_footer">
-                        <div className="tab_checkbox">
-                          <input type="checkbox" id="private" name="scales" />
-                          <label htmlFor="private">Private</label>
-                        </div>
-                        <button className="tab_button" onClick={removeLink}>Remove</button>
-                        <button className="tab_button" onClick={saveLink}>Save</button>
+                <div className="tab_footer">
+                    <div className="tab_checkbox">
+                        <input type="checkbox" id="private" name="scales"/>
+                        <label htmlFor="private">Private</label>
                     </div>
-                </div> }
-                {currentTab === 'History ' && <div id="user-links-page" style={{"display": "none"}}>
-                        <ul id="listContainer">
-                        </ul>
-                        <button onClick={() => setCurrentTab('Tab')}>Back</button>
-                    </div>
-                }
+                    <button className="tab_button" onClick={removeLink}>Remove</button>
+                    <button className="tab_button" onClick={saveLink}>Save</button>
+                </div>
+            </div>}
+            {currentTab === 'History ' && <div id="user-links-page" style={{"display": "none"}}>
+                <ul id="listContainer">
+                </ul>
+                <button onClick={() => setCurrentTab('Tab')}>Back</button>
+            </div>
+            }
         </div>
     );
 };
