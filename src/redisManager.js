@@ -5,8 +5,7 @@ const start = async () => {
     await client.connect();
 };
 
-const addLink = async (userId, urlValue, name, keywords, caption) => {
-    const data = {name, keywords, caption};
+const addLink = async (userId, urlValue, data) => {
     await client.HSET(`links:${userId}`, urlValue, JSON.stringify(data));
     return await getAllLinks(userId);
 };

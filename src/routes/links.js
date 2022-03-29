@@ -16,10 +16,11 @@ router.use('/hello', (req, res) => {
 
 router.post('/saveLink/:id', async (req, res) => {
     try {
-        let {keywords, urlValue, name, caption} = req.body;
+        const {keywords, urlValue, name, caption, isPrivate} = req.body;
         const userId = req.params.id;
-        let keywordsSplit = keywords.split(',');
-        const links = await redisManager.addLink(userId, urlValue, name, keywordsSplit, caption);
+        const keywordsSplit = keywords.split(',');
+        const data = {name, keywordsSplit, caption, isPrivate};
+        const links = await redisManager.addLink(userId, urlValue, data);
         setHeaders(res);
         console.log('saved link');
         res.send({links});
