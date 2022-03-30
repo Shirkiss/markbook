@@ -20,7 +20,8 @@ router.post('/saveLink/:id', async (req, res) => {
         const userId = req.params.id;
         const keywordsSplit = keywords.split(',');
         const data = {name, keywordsSplit, caption, isPrivate};
-        const links = await redisManager.addLink(userId, urlValue, data);
+        await redisManager.addLink(userId, urlValue, data);
+        const links = await redisManager.getAllLinks(userId);
         setHeaders(res);
         console.log('saved link');
         res.send({links});
