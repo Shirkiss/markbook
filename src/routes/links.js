@@ -30,12 +30,31 @@ router.post('/saveLink/:id', async (req, res) => {
     }
 });
 
+router.post('/editLink/:id', async (req, res) => {
+    try {
+        const {keywords, urlValue, name, caption, isPrivate, originalUrl} = req.body;
+        const userId = req.params.id;
+        await redisManager.removeLink(userId, originalUrl);
+        const keywordsSplit = keywords.split(',');
+        const data = {name, keywordsSplit, caption, isPrivate};
+        await redisManager.addLink(userId, urlValue, data);
+        const links = await redisManager.getAllLinks(userId);
+        setHeaders(res);
+        console.log('saved link');
+        res.send({links});
+    } catch (error) {
+        res.statusCode(500);
+        res.send({message: 'Failed to save link', error});
+    }
+});
+
 router.use('/removeLink/:id', async (req, res) => {
     try {
         setHeaders(res);
         let {urlValue} = req.body;
         const userId = req.params.id;
-        const links = await redisManager.removeLink(userId, urlValue);
+        await redisManager.removeLink(userId, urlValue);
+        const links = await redisManager.getAllLinks(userId);
         console.log('removed link');
         res.send({links});
     } catch (error) {
