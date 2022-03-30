@@ -14,8 +14,6 @@ export const App = () => {
     const [editMode, setEditMode] = useState<boolean>(true);
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
 
-
-    const userId = 1;
     const db = process.env["DB"];
 
     /**
@@ -47,23 +45,25 @@ export const App = () => {
             });
         } else {
             // redis
-            const fetchData = async () => {
-                let data = new URLSearchParams({
-                    name,
-                    keywords,
-                    caption,
-                    urlValue
-                });
-                await fetch(`http://localhost:8000/saveLink/${userId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: data,
-                });
-            };
-            fetchData();
+            chrome.storage.sync.get('userId', ({userId}) => {
+                const fetchData = async () => {
+                    let data = new URLSearchParams({
+                        name,
+                        keywords,
+                        caption,
+                        urlValue
+                    });
+                    await fetch(`http://localhost:8000/saveLink/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: data,
+                    });
+                };
+                fetchData();
+            })
         }
         setCurrentTab('List');
     };
@@ -81,18 +81,20 @@ export const App = () => {
             });
         } else {
             // redis
-            const fetchData = async () => {
-                let data = new URLSearchParams({urlValue});
-                await fetch(`http://localhost:8000/removeLink/${userId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: data,
-                });
-            };
-            fetchData();
+            chrome.storage.sync.get('userId', ({userId}) => {
+                const fetchData = async () => {
+                    let data = new URLSearchParams({urlValue});
+                    await fetch(`http://localhost:8000/removeLink/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: data,
+                    });
+                };
+                fetchData();
+            })
         }
         setCurrentTab('List');
     };

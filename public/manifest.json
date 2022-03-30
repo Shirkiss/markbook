@@ -13,7 +13,9 @@
   "permissions": [
     "tabs",
     "storage",
-    "history"
+    "history",
+    "identity",
+    "identity.email"
   ],
   "icons": {
     "16": "markbook-icon.png",
