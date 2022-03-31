@@ -24,7 +24,7 @@ router.post('/saveLink/:id', async (req, res) => {
         const links = await redisManager.getAllLinks(userId);
         setHeaders(res);
         console.log('saved link');
-        res.send({links});
+        res.send(links);
     } catch (error) {
         res.statusCode(500);
         res.send({message: 'Failed to save link', error});
@@ -42,7 +42,7 @@ router.post('/editLink/:id', async (req, res) => {
         const links = await redisManager.getAllLinks(userId);
         setHeaders(res);
         console.log('saved link');
-        res.send({links});
+        res.send(links);
     } catch (error) {
         res.statusCode(500);
         res.send({message: 'Failed to save link', error});
@@ -57,7 +57,7 @@ router.use('/removeLink/:id', async (req, res) => {
         await redisManager.removeLink(userId, urlValue);
         const links = await redisManager.getAllLinks(userId);
         console.log('removed link');
-        res.send({links});
+        res.send(links);
     } catch (error) {
         res.statusCode(500);
         res.send({message: 'Failed to remove link', error});
@@ -82,7 +82,7 @@ router.use('/getAllLinks/:id', async (req, res) => {
     const userId = req.params.id;
     const links = await redisManager.getAllLinks(userId);
     console.log('sent all links');
-    res.send({links});
+    res.send(links);
 });
 
 router.use('/getLink/:id', async (req, res) => {
@@ -91,7 +91,7 @@ router.use('/getLink/:id', async (req, res) => {
         let {urlValue} = req.body;
         const userId = req.params.id;
         const link = await redisManager.getLink(userId, urlValue);
-        res.send({link});
+        res.send(link);
     } catch (error) {
         res.statusCode(500);
         res.send({message: 'Failed to get link', error});
