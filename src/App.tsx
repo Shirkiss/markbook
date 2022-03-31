@@ -35,7 +35,6 @@ export const App = () => {
      * Save link
      */
     const saveLink = () => {
-
         if (db === 'local-storage') {
             // local storage
             chrome.storage.sync.get('links', ({links}) => {
@@ -53,14 +52,17 @@ export const App = () => {
                         caption,
                         urlValue
                     });
-                    await fetch(`http://localhost:8000/saveLink/${userId}`, {
+                    const response = await fetch(`http://localhost:8000/saveLink/${userId}`, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: data,
+                    }).then((response) => {
+                        return response.json();
                     });
+                    console.log(response);
                 };
                 fetchData();
             })
@@ -84,14 +86,17 @@ export const App = () => {
             chrome.storage.sync.get('userId', ({userId}) => {
                 const fetchData = async () => {
                     let data = new URLSearchParams({urlValue});
-                    await fetch(`http://localhost:8000/removeLink/${userId}`, {
+                    const response: any = await fetch(`http://localhost:8000/removeLink/${userId}`, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: data,
+                    }).then(() => {
+                        return response.json();
                     });
+                    console.log(response);
                 };
                 fetchData();
             })
