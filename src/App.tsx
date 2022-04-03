@@ -1,18 +1,33 @@
 import React, {useEffect, useState} from 'react';
 import Sidebar from './components/Sidebar';
 import {getFavicon} from './services/services';
+import * as FaIcons from 'react-icons/ai'
 import './App.css';
 
-
+export interface Tag{
+    id:string;
+    name:string;
+    description:string;
+    caption:string;
+    keywords:string;
+    iconUrl:string;
+}
 export const App = () => {
     const [currentTab, setCurrentTab] = useState<string>('Tabs');
     const [urlValue, setUrl] = useState<string>('');
     const [name, setName] = useState<string>('');
     const [keywords, setKeywords] = useState<string>('');
     const [caption, setCaption] = useState<string>('');
-    const [tagList, setTagList] = useState<object>({});
+    const [tagList, setTagList] = useState<Array<Tag>>([]);
     const [editMode, setEditMode] = useState<boolean>(true);
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+
+    const jsonRes = {
+                'www.google.com': '{"name":"Google search","keywordsSplit":[""],"caption":"sas"}',
+                'https://redis.io/docs/':'{"name":"Redis Lab","keywordsSplit":[""],"caption":"sas"}',
+                'https://www.youtube.com/': '{"name":"youtube","keywordsSplit":[""],"caption":""}',
+            };
+           // setTagList(jsonRes);
 
     const db = process.env["DB"];
 
@@ -22,6 +37,7 @@ export const App = () => {
     useEffect(() => {
         const queryInfo = {active: true, lastFocusedWindow: true};
         if (urlValue == '') {
+            updateTagList(jsonRes);
             chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
                 const url = tabs[0].url || '';
                 setUrl(url);
@@ -30,6 +46,25 @@ export const App = () => {
 
     }, []);
 
+
+    function updateTagList(tagListObject: any) {
+       let arr: Tag[] = [];
+
+       Object.keys(tagListObject).map(function(key){
+            const obj: any = JSON.parse(tagListObject[key]);
+            let currentTag: Tag = {
+                                    name: obj.name,
+                                    caption: obj.caption,
+                                    id:key,
+                                    description: "My description",
+                                    keywords:obj.keywordsSplit,
+                                    iconUrl:getFavicon(key),
+                                }
+           arr.push(currentTag)
+           return arr;
+       });
+       setTagList(arr);
+    }
 
     /**
      * Save link
@@ -52,7 +87,8 @@ export const App = () => {
                         caption,
                         urlValue
                     });
-                    const response = await fetch(`http://localhost:8000/saveLink/${userId}`, {
+                     await fetch(`http://localhost:8000/saveLink/${userId}`, {
+
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
@@ -60,14 +96,16 @@ export const App = () => {
                         },
                         body: data,
                     }).then((response) => {
-                        return response.json();
+                        response.json().then(data => {
+                          // do something with your data
+                          updateTagList(data);
+                        });
                     });
-                    console.log(response);
                 };
                 fetchData();
             })
         }
-        setCurrentTab('List');
+        setCurrentTab('Copy');
     };
 
     /**
@@ -94,9 +132,9 @@ export const App = () => {
                         },
                         body: data,
                     }).then(() => {
-                        return response.json();
+                        console.log("MAII ::: ", response.json());
                     });
-                    console.log(response);
+
                 };
                 fetchData();
             })
@@ -131,6 +169,9 @@ export const App = () => {
         return comment || '';
     };
 
+    //console.log("MAIII the list item is 1: ", tagList);
+    const listItems = Object.keys(jsonRes);
+    console.log("MAIII the list item is: ", currentTab);
     return (
         <div className="App">
             <Sidebar setCurrentTab={setCurrentTab}/>
@@ -158,10 +199,27 @@ export const App = () => {
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}
-            {currentTab === 'History ' && <div id="user-links-page" style={{"display": "none"}}>
-                <ul id="listContainer">
-                </ul>
-                <button onClick={() => setCurrentTab('Tab')}>Back</button>
+            {currentTab === 'Copy' && <div id="user-links-page">
+                 <table className="list_table">
+                  {tagList.map(({ id,
+                                     name,
+                                     description,
+                                     caption,
+                                     keywords,
+                                     iconUrl}) => (
+                         <tr className="list_row" key={id}>
+                             <td className="list_name">
+                                 {iconUrl !== '' ? <img src={iconUrl} /> : <FaIcons.AiFillAlert size={30} />}
+                                 <div className="list_name_title">
+                                     <span>{name}</span>
+                                     <span>{description}</span>
+                                 </div>
+                             </td>
+                             <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20} /></td>
+                             <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20} /></td>
+                        </tr>
+                       ))}
+                </table>
             </div>
             }
         </div>
