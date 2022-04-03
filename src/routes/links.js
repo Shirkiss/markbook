@@ -4,6 +4,7 @@ const redisManager = require('../redisManager');
 
 const setHeaders = (res) => {
     res.setHeader('Access-Control-Allow-Origin', 'chrome-extension://midgecoohkdmehedgabcdpbgjjachkkc');
+    //res.setHeader('Access-Control-Allow-Origin', 'chrome-extension://hfnlgdgnpbfeobidpfpfhcejkdkocpni'); // MAI's
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
 };

@@ -2,6 +2,7 @@
 
 }
 
+/*  New tab view */
 .tab_data {
     width: 100%;
     margin: 20px;
@@ -45,6 +46,46 @@
    margin-right: 20px;
    width: 114px;
 }
+
+/* List view */
+.list_table {
+    margin-top: 40px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    display: block;
+}
+
+.list_name_title {
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.list_row {
+    display: flex;
+    width: 88%;
+    margin-bottom: 10px;
+}
+
+.list_name {
+    display: flex;
+    width: 80%;
+    max-width: 80%;
+}
+
+.list_first_icon {
+    float: left;
+    margin-right: 20px;
+}
+
+.list_second_icon {
+    float: left;
+    margin-right: 10px;
+}
+
 
 .App-logo {
   height: 40vmin;
