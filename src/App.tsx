@@ -111,7 +111,7 @@ export const App = () => {
     /**
      * Remove link
      */
-    const removeLink = () => {
+    const removeLink = (urlValue:string) => {
         if (db === 'local-storage') {
             // local storage
             chrome.storage.sync.get('links', ({links}) => {
@@ -131,15 +131,18 @@ export const App = () => {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: data,
-                    }).then(() => {
-                        console.log("MAII ::: ", response.json());
-                    });
+                   }).then((response) => {
+                      response.json().then(data => {
+                        // do something with your data
+                        updateTagList(data);
+                      });
+                  });
 
                 };
                 fetchData();
             })
         }
-        setCurrentTab('List');
+        setCurrentTab('Copy');
     };
 
 
@@ -169,12 +172,9 @@ export const App = () => {
         return comment || '';
     };
 
-    //console.log("MAIII the list item is 1: ", tagList);
-    const listItems = Object.keys(jsonRes);
-    console.log("MAIII the list item is: ", currentTab);
     return (
         <div className="App">
-            <Sidebar setCurrentTab={setCurrentTab}/>
+            <Sidebar setCurrentTab={setCurrentTab} currentTab={currentTab}/>
             {currentTab === 'Tabs' && <div>
                 <div className="tab_data">
                     <input type="text" className="tab_input" id="urlBox" value={urlValue}
@@ -195,7 +195,7 @@ export const App = () => {
                         <input type="checkbox" id="private" name="scales"/>
                         <label htmlFor="private">Private</label>
                     </div>
-                    <button className="tab_button" onClick={removeLink}>Remove</button>
+                    <button className="tab_button" onClick={() => removeLink(urlValue)}>Remove</button>
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}
@@ -216,7 +216,7 @@ export const App = () => {
                                  </div>
                              </td>
                              <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20} /></td>
-                             <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20} /></td>
+                             <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20} onClick={() => removeLink(id)} /></td>
                         </tr>
                        ))}
                 </table>

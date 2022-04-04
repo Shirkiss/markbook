@@ -70,13 +70,11 @@ const MenuItemDiv = styled.div`
     color: #ffffff;
 `
 
-const Sidebar: React.FunctionComponent<{setCurrentTab:Function}> = ({setCurrentTab}) => {
+const Sidebar: React.FunctionComponent<{setCurrentTab:Function, currentTab: string}> = ({setCurrentTab, currentTab = 'Tabs'}) => {
     const [close, setClose] = useState(false)
-    const [selectedTab, setSelectedTab] = useState('Tabs')
     const showSidebar = () => setClose(!close)
 
    const handleMenuClick = (title: string) => {
-        setSelectedTab(title);
         setCurrentTab(title);
    }
 
@@ -86,7 +84,7 @@ const Sidebar: React.FunctionComponent<{setCurrentTab:Function}> = ({setCurrentT
                 {SidebarData.map((item, index) => {
                     return (
                         <MenuItems key={index}>
-                            {selectedTab === item.title && <ArrowSelected />}
+                            {currentTab === item.title && <ArrowSelected />}
                             <MenuItemDiv onClick={() => handleMenuClick(item.title)}>
                                 {item.icon}
                             </MenuItemDiv>
