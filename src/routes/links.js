@@ -78,7 +78,7 @@ router.use('/removeAllLinks/:id', async (req, res) => {
     }
 });
 
-router.use('/getAllLinks/:id', async (req, res) => {
+router.post('/getAllLinks/:id', async (req, res) => {
     setHeaders(res);
     const userId = req.params.id;
     const links = await redisManager.getAllLinks(userId);

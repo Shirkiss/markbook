@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import {getFavicon} from './services/services';
 import * as FaIcons from 'react-icons/ai'
 import './App.css';
+import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
 
 export interface Tag{
     id:string;
@@ -13,21 +14,17 @@ export interface Tag{
     iconUrl:string;
 }
 export const App = () => {
-    const [currentTab, setCurrentTab] = useState<string>('Tabs');
+    const [currentTab, setCurrentTab] = useState<string>(TAB_INFO);
     const [urlValue, setUrl] = useState<string>('');
     const [name, setName] = useState<string>('');
     const [keywords, setKeywords] = useState<string>('');
     const [caption, setCaption] = useState<string>('');
     const [tagList, setTagList] = useState<Array<Tag>>([]);
+    const [userId, setUserId] = useState<string>('');
     const [editMode, setEditMode] = useState<boolean>(true);
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+    const [isPrivate, setIsPrivate] = useState<boolean>(false);
 
-    const jsonRes = {
-                'www.google.com': '{"name":"Google search","keywordsSplit":[""],"caption":"sas"}',
-                'https://redis.io/docs/':'{"name":"Redis Lab","keywordsSplit":[""],"caption":"sas"}',
-                'https://www.youtube.com/': '{"name":"youtube","keywordsSplit":[""],"caption":""}',
-            };
-           // setTagList(jsonRes);
 
     const db = process.env["DB"];
 
@@ -36,16 +33,32 @@ export const App = () => {
      */
     useEffect(() => {
         const queryInfo = {active: true, lastFocusedWindow: true};
+
+        async function resetAppData() {
+            const currId = await setCurrentUserId();
+            console.log(userId);
+            await getAllLinks(currId);
+        }
         if (urlValue == '') {
-            updateTagList(jsonRes);
+            resetAppData();
             chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
                 const url = tabs[0].url || '';
                 setUrl(url);
             });
         }
-
     }, []);
 
+
+    function setCurrentUserId() {
+        return new Promise<string>((resolve,reject)=>{
+            //here our function should be implemented
+             chrome.storage.sync.get('userId', ({userId}) => {
+                setUserId(userId);
+                resolve(userId);
+            });
+        });
+
+    }
 
     function updateTagList(tagListObject: any) {
        let arr: Tag[] = [];
@@ -64,6 +77,18 @@ export const App = () => {
            return arr;
        });
        setTagList(arr);
+    }
+
+    async function getAllLinks(userId:string) {
+       const response = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+        });
+        const result = await response.json();
+        updateTagList(result);
     }
 
     /**
@@ -85,7 +110,8 @@ export const App = () => {
                         name,
                         keywords,
                         caption,
-                        urlValue
+                        urlValue,
+                        isPrivate: isPrivate.toString()
                     });
                      await fetch(`http://localhost:8000/saveLink/${userId}`, {
 
@@ -105,7 +131,7 @@ export const App = () => {
                 fetchData();
             })
         }
-        setCurrentTab('Copy');
+        setCurrentTab(LIST);
     };
 
     /**
@@ -142,7 +168,7 @@ export const App = () => {
                 fetchData();
             })
         }
-        setCurrentTab('Copy');
+        setCurrentTab(LIST);
     };
 
 
@@ -162,20 +188,11 @@ export const App = () => {
         });
     };
 
-    /**
-     * Display comment logic
-     */
-    const displayComment = (comment: string) => {
-        if (comment?.length > 100) {
-            return comment.substr(0, 100) + '...';
-        }
-        return comment || '';
-    };
 
     return (
         <div className="App">
             <Sidebar setCurrentTab={setCurrentTab} currentTab={currentTab}/>
-            {currentTab === 'Tabs' && <div>
+            {currentTab === TAB_INFO && <div>
                 <div className="tab_data">
                     <input type="text" className="tab_input" id="urlBox" value={urlValue}
                            onChange={e => setUrl(e.target.value)}/>
@@ -192,14 +209,14 @@ export const App = () => {
 
                 <div className="tab_footer">
                     <div className="tab_checkbox">
-                        <input type="checkbox" id="private" name="scales"/>
+                        <input type="checkbox" id="private" name="scales" onChange={() => setIsPrivate(!isPrivate)}/>
                         <label htmlFor="private">Private</label>
                     </div>
                     <button className="tab_button" onClick={() => removeLink(urlValue)}>Remove</button>
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}
-            {currentTab === 'Copy' && <div id="user-links-page">
+            {currentTab === LIST && <div id="user-links-page">
                  <table className="list_table">
                   {tagList.map(({ id,
                                      name,
