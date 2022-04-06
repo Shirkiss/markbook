@@ -24,6 +24,15 @@ class ElasticSearch {
         if (!exists) {
             await this.client.indices.create({
                 index,
+                body: {
+                    "mappings": {
+                        "properties": {
+                            "timestamp": {
+                                "type": "date",
+                            }
+                        }
+                    }
+                }
             })
         }
     }
@@ -36,10 +45,23 @@ class ElasticSearch {
         await this.client.delete({index: this.index, id});
     }
 
-    async addLink(name, urlValue, keywords, caption, userId) {
+    async editLink(id, name, urlValue, keywords, caption, userId, timestamp) {
+        let data = {name, urlValue, keywords, caption, userId, timestamp};
+        data['lastEditTime'] = new Date();
         await this.client.index({
             index: this.index,
-            document: {name, urlValue, keywords, caption, userId}
+            id,
+            document: data
+        })
+        await this.client.indices.refresh({index: this.index})
+    }
+
+    async addLink(name, urlValue, keywords, caption, userId) {
+        let data = {name, urlValue, keywords, caption, userId};
+        data['timestamp'] = new Date();
+        await this.client.index({
+            index: this.index,
+            document: data
         })
         await this.client.indices.refresh({index: this.index})
     }

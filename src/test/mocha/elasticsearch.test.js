@@ -29,7 +29,6 @@ describe('Elasticsearch tests', function() {
 
     it('mostFrequentKeyword should return correct data', async () => {
         const result = await elasticSearch.mostFrequentKeyword(2);
-        expect(result.length).to.equal(2);
         expect(result).to.deep.equal([
             {
                 "key": "recipe",
