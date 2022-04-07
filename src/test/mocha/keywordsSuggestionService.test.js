@@ -43,4 +43,9 @@ describe('keywordsSuggestionService.js tests', function() {
         expect(result2.length).to.equal(4);
         expect(result2[0]).to.equal('shir');
     })
+
+    it('getGeneralKeywordsSuggestion should return correct data', async () => {
+        expect (await keywordsSuggestionService.getInitialKeywordsSuggestion(1)).to.be.deep.equal(await keywordsSuggestionService.getGeneralKeywordsSuggestion(1, '', 4))
+        expect (await keywordsSuggestionService.getKeywordsSuggestion(1, 's')).to.be.deep.equal(await keywordsSuggestionService.getGeneralKeywordsSuggestion(1, 's', 20))
+    })
 });

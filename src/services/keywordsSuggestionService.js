@@ -7,7 +7,7 @@ const NUMBER_OF_KEYWORDS_SUGGESTIONS = 20;
 
 const getKeywordsSuggestion = async (userId, prefix) => {
     let keywords = [];
-    const userCommonKeywords = await elasticSearchClient.mostFrequentKeywordForUserByPrefix(userId, prefix,NUMBER_OF_KEYWORDS_SUGGESTIONS);
+    const userCommonKeywords = await elasticSearchClient.mostFrequentKeywordForUserByPrefix(userId, prefix, NUMBER_OF_KEYWORDS_SUGGESTIONS);
     if (userCommonKeywords) {
         keywords = getKeysFromResponse(userCommonKeywords);
     }
@@ -19,6 +19,20 @@ const getKeywordsSuggestion = async (userId, prefix) => {
 
     return keywords;
 
+}
+const getGeneralKeywordsSuggestion = async (userId, prefix, limit) => {
+    let keywords = [];
+    const userCommonKeywords = await elasticSearchClient.mostFrequentKeywordForUserByPrefix(userId, prefix, limit);
+    if (userCommonKeywords) {
+        keywords = getKeysFromResponse(userCommonKeywords);
+    }
+    if (keywords.length < limit) {
+        const generalCommonKeywords = await elasticSearchClient.mostFrequentKeywordByPrefix(prefix, limit - keywords.length);
+        let result = getKeysFromResponse(generalCommonKeywords);
+        keywords = keywords.concat(result);
+    }
+
+    return keywords;
 }
 
 const getInitialKeywordsSuggestion = async (userId) => {
@@ -40,5 +54,5 @@ const getKeysFromResponse = (response) => {
     return response.map(link => link.key);
 }
 
-module.exports = {getInitialKeywordsSuggestion, getKeywordsSuggestion}
+module.exports = {getInitialKeywordsSuggestion, getKeywordsSuggestion, getGeneralKeywordsSuggestion}
 
