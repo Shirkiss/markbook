@@ -155,6 +155,24 @@ class ElasticSearch {
         return result.aggregations.top_keywords.buckets;
     }
 
+    async mostFrequentKeywordByPrefix(prefix, limit) {
+        const result = await this.client.search({
+            index: this.index,
+            body: {
+                aggs: {
+                    top_keywords: {
+                        terms: {
+                            field: 'keywords.keyword',
+                            include: `${prefix}.*`,
+                            size: limit
+                        },
+                    }
+                },
+            }
+        });
+        return result.aggregations.top_keywords.buckets;
+    }
+
     async mostFrequentKeywordForUser(userId, limit) {
         const result = await this.client.search({
             index: this.index,
@@ -164,6 +182,25 @@ class ElasticSearch {
                     top_keywords: {
                         terms: {
                             field: 'keywords.keyword',
+                            size: limit
+                        },
+                    }
+                }
+            }
+        });
+        return result.aggregations.top_keywords.buckets;
+    }
+
+    async mostFrequentKeywordForUserByPrefix(userId, prefix, limit) {
+        const result = await this.client.search({
+            index: this.index,
+            body: {
+                query: {"term": {userId}},
+                aggs: {
+                    top_keywords: {
+                        terms: {
+                            field: 'keywords.keyword',
+                            include: `${prefix}.*`,
                             size: limit
                         },
                     }
