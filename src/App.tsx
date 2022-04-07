@@ -5,18 +5,20 @@ import * as FaIcons from 'react-icons/ai'
 import './App.css';
 import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
 
-export interface Tag{
-    id:string;
-    name:string;
-    description:string;
-    caption:string;
-    keywords:string;
-    iconUrl:string;
+export interface Tag {
+    id: string;
+    name: string;
+    description: string;
+    caption: string;
+    keywords: string;
+    favIconUrl: string;
 }
+
 export const App = () => {
     const [currentTab, setCurrentTab] = useState<string>(TAB_INFO);
     const [urlValue, setUrl] = useState<string>('');
     const [name, setName] = useState<string>('');
+    const [favIconUrl, setFavIconUrl] = useState<string>('');
     const [keywords, setKeywords] = useState<string>('');
     const [caption, setCaption] = useState<string>('');
     const [tagList, setTagList] = useState<Array<Tag>>([]);
@@ -39,20 +41,25 @@ export const App = () => {
             console.log(userId);
             await getAllLinks(currId);
         }
+
         if (urlValue == '') {
             resetAppData();
             chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
                 const url = tabs[0].url || '';
+                const name = tabs[0].title || '';
+                const favIconUrl = tabs[0].favIconUrl || '';
                 setUrl(url);
+                setName(name);
+                setFavIconUrl(favIconUrl);
             });
         }
     }, []);
 
 
     function setCurrentUserId() {
-        return new Promise<string>((resolve,reject)=>{
+        return new Promise<string>((resolve, reject) => {
             //here our function should be implemented
-             chrome.storage.sync.get('userId', ({userId}) => {
+            chrome.storage.sync.get('userId', ({userId}) => {
                 setUserId(userId);
                 resolve(userId);
             });
@@ -61,26 +68,26 @@ export const App = () => {
     }
 
     function updateTagList(tagListObject: any) {
-       let arr: Tag[] = [];
+        let arr: Tag[] = [];
 
-       Object.keys(tagListObject).map(function(key){
+        Object.keys(tagListObject).map(function (key) {
             const obj: any = JSON.parse(tagListObject[key]);
             let currentTag: Tag = {
-                                    name: obj.name,
-                                    caption: obj.caption,
-                                    id:key,
-                                    description: "My description",
-                                    keywords:obj.keywordsSplit,
-                                    iconUrl:getFavicon(key),
-                                }
-           arr.push(currentTag)
-           return arr;
-       });
-       setTagList(arr);
+                name: obj.name,
+                caption: obj.caption,
+                id: key,
+                description: "My description",
+                keywords: obj.keywordsSplit,
+                favIconUrl: obj.favIconUrl,
+            }
+            arr.push(currentTag)
+            return arr;
+        });
+        setTagList(arr);
     }
 
-    async function getAllLinks(userId:string) {
-       const response = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
+    async function getAllLinks(userId: string) {
+        const response = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -111,9 +118,10 @@ export const App = () => {
                         keywords,
                         caption,
                         urlValue,
-                        isPrivate: isPrivate.toString()
+                        isPrivate: isPrivate.toString(),
+                        favIconUrl
                     });
-                     await fetch(`http://localhost:8000/saveLink/${userId}`, {
+                    await fetch(`http://localhost:8000/saveLink/${userId}`, {
 
                         method: 'POST',
                         headers: {
@@ -123,8 +131,8 @@ export const App = () => {
                         body: data,
                     }).then((response) => {
                         response.json().then(data => {
-                          // do something with your data
-                          updateTagList(data);
+                            // do something with your data
+                            updateTagList(data);
                         });
                     });
                 };
@@ -137,7 +145,7 @@ export const App = () => {
     /**
      * Remove link
      */
-    const removeLink = (urlValue:string) => {
+    const removeLink = (urlValue: string) => {
         if (db === 'local-storage') {
             // local storage
             chrome.storage.sync.get('links', ({links}) => {
@@ -157,12 +165,12 @@ export const App = () => {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: data,
-                   }).then((response) => {
-                      response.json().then(data => {
-                        // do something with your data
-                        updateTagList(data);
-                      });
-                  });
+                    }).then((response) => {
+                        response.json().then(data => {
+                            // do something with your data
+                            updateTagList(data);
+                        });
+                    });
 
                 };
                 fetchData();
@@ -177,10 +185,9 @@ export const App = () => {
             const userHistoryItems: { favicon: string; typedCount?: number | undefined; title?: string | undefined; url?: string | undefined; lastVisitTime?: number | undefined; visitCount?: number | undefined; id: string; }[] = [];
             data.forEach(function (page) {
                 if (page.url) {
-                    const favicon = getFavicon(page.url);
                     userHistoryItems.push({
                         ...page,
-                        favicon: favicon
+                        favicon: favIconUrl
                     })
                 }
             });
@@ -217,25 +224,29 @@ export const App = () => {
                 </div>
             </div>}
             {currentTab === LIST && <div id="user-links-page">
-                 <table className="list_table">
-                  {tagList.map(({ id,
-                                     name,
-                                     description,
-                                     caption,
-                                     keywords,
-                                     iconUrl}) => (
-                         <tr className="list_row" key={id}>
-                             <td className="list_name">
-                                 {iconUrl !== '' ? <img src={iconUrl} /> : <FaIcons.AiFillAlert size={30} />}
-                                 <div className="list_name_title">
-                                     <span>{name}</span>
-                                     <span>{description}</span>
-                                 </div>
-                             </td>
-                             <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20} /></td>
-                             <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20} onClick={() => removeLink(id)} /></td>
+                <table className="list_table">
+                    {tagList.map(({
+                                      id,
+                                      name,
+                                      description,
+                                      caption,
+                                      keywords,
+                                      favIconUrl
+                                  }) => (
+                        <tr className="list_row" key={id}>
+                            <td className="list_name">
+                                {favIconUrl !== '' ? <img src={favIconUrl}/> : <FaIcons.AiFillAlert size={30}/>}
+                                <div className="list_name_title">
+                                    <span>{name}</span>
+                                    <span>{description}</span>
+                                </div>
+                            </td>
+                            <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}/></td>
+                            <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20}
+                                                                                     onClick={() => removeLink(id)}/>
+                            </td>
                         </tr>
-                       ))}
+                    ))}
                 </table>
             </div>
             }
