@@ -86,6 +86,11 @@
     margin-right: 10px;
 }
 
+.list_favicon {
+    max-width: 30px;
+    max-height: 30px;
+}
+
 
 .App-logo {
   height: 40vmin;

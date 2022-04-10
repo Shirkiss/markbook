@@ -5,13 +5,14 @@ import * as FaIcons from 'react-icons/ai'
 import './App.css';
 import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
 
-export interface Tag {
+export interface Link {
     id: string;
     name: string;
     description: string;
     caption: string;
     keywords: string;
     favIconUrl: string;
+    isPrivate: boolean;
 }
 
 export const App = () => {
@@ -21,12 +22,12 @@ export const App = () => {
     const [favIconUrl, setFavIconUrl] = useState<string>('');
     const [keywords, setKeywords] = useState<string>('');
     const [caption, setCaption] = useState<string>('');
-    const [tagList, setTagList] = useState<Array<Tag>>([]);
+    const [tagList, setTagList] = useState<Array<Link>>([]);
     const [userId, setUserId] = useState<string>('');
-    const [editMode, setEditMode] = useState<boolean>(true);
+    const [isInEditMode, setIsInEditMode] = useState<boolean>(false);
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
-
+    const [originalUrl, setOriginalUrl] = useState<string>('');
 
     const db = process.env["DB"];
 
@@ -34,8 +35,6 @@ export const App = () => {
      * Get current URL
      */
     useEffect(() => {
-        const queryInfo = {active: true, lastFocusedWindow: true};
-
         async function resetAppData() {
             const currId = await setCurrentUserId();
             console.log(userId);
@@ -44,17 +43,22 @@ export const App = () => {
 
         if (urlValue == '') {
             resetAppData();
-            chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
-                const url = tabs[0].url || '';
-                const name = tabs[0].title || '';
-                const favIconUrl = tabs[0].favIconUrl || '';
-                setUrl(url);
-                setName(name);
-                setFavIconUrl(favIconUrl);
-            });
+            getTabData();
         }
     }, []);
 
+    function setEditMode(itemId: string) {
+        setIsInEditMode(true);
+        setCurrentTab(TAB_INFO);
+        const curr = tagList.find(item => item.id === itemId);
+        setOriginalUrl(curr?.id || '');
+        setCaption(curr?.caption || '');
+        setIsPrivate(curr?.isPrivate || false);
+        setFavIconUrl(curr?.favIconUrl || '');
+        setUrl(curr?.id || '');
+        setName(curr?.name || '')
+        setKeywords(curr?.keywords || '');
+    }
 
     function setCurrentUserId() {
         return new Promise<string>((resolve, reject) => {
@@ -68,21 +72,24 @@ export const App = () => {
     }
 
     function updateTagList(tagListObject: any) {
-        let arr: Tag[] = [];
+        let arr: Link[] = [];
 
         Object.keys(tagListObject).map(function (key) {
             const obj: any = JSON.parse(tagListObject[key]);
-            let currentTag: Tag = {
+            console.log("The data is : ", obj);
+            let currentTag: Link = {
                 name: obj.name,
                 caption: obj.caption,
                 id: key,
                 description: "My description",
                 keywords: obj.keywordsSplit,
                 favIconUrl: obj.favIconUrl,
+                isPrivate: obj.isPrivate,
             }
             arr.push(currentTag)
             return arr;
         });
+        console.log("The data is final: ", arr);
         setTagList(arr);
     }
 
@@ -119,9 +126,11 @@ export const App = () => {
                         caption,
                         urlValue,
                         isPrivate: isPrivate.toString(),
-                        favIconUrl
+                        favIconUrl,
+                        originalUrl,
                     });
-                    await fetch(`http://localhost:8000/saveLink/${userId}`, {
+                    let saveFunction = isInEditMode ? 'editLink' : 'saveLink';
+                    await fetch(`http://localhost:8000/${saveFunction}/${userId}`, {
 
                         method: 'POST',
                         headers: {
@@ -132,6 +141,7 @@ export const App = () => {
                     }).then((response) => {
                         response.json().then(data => {
                             // do something with your data
+                            console.log("MAi the data is:" , data);
                             updateTagList(data);
                         });
                     });
@@ -195,10 +205,37 @@ export const App = () => {
         });
     };
 
+    function onChangeTab(tab: string) {
+       setIsInEditMode(false);
+       getTabData();
+       setIsPrivate(false);
+       setCurrentTab(tab);
+    }
+
+    function getTabData() {
+        const queryInfo = {active: true, lastFocusedWindow: true};
+
+        chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
+           const url = tabs[0].url || '';
+           const name = tabs[0].title || '';
+           const favIconUrl = tabs[0].favIconUrl || '';
+           setUrl(url);
+           setName(name);
+           setFavIconUrl(favIconUrl);
+       });
+    }
+
+    function setPrivateState() {
+        if (typeof isPrivate == "string") {
+            setIsPrivate(isPrivate !== "true");
+        } else {
+            setIsPrivate(!isPrivate);
+        }
+    }
 
     return (
         <div className="App">
-            <Sidebar setCurrentTab={setCurrentTab} currentTab={currentTab}/>
+            <Sidebar setCurrentTab={onChangeTab} currentTab={currentTab}/>
             {currentTab === TAB_INFO && <div>
                 <div className="tab_data">
                     <input type="text" className="tab_input" id="urlBox" value={urlValue}
@@ -216,7 +253,7 @@ export const App = () => {
 
                 <div className="tab_footer">
                     <div className="tab_checkbox">
-                        <input type="checkbox" id="private" name="scales" onChange={() => setIsPrivate(!isPrivate)}/>
+                        <input type="checkbox" id="private" name="scales" checked={isPrivate.toString() == 'true'} onChange={setPrivateState}/>
                         <label htmlFor="private">Private</label>
                     </div>
                     <button className="tab_button" onClick={() => removeLink(urlValue)}>Remove</button>
@@ -235,13 +272,14 @@ export const App = () => {
                                   }) => (
                         <tr className="list_row" key={id}>
                             <td className="list_name">
-                                {favIconUrl !== '' ? <img src={favIconUrl}/> : <FaIcons.AiFillAlert size={30}/>}
+                                {favIconUrl !== '' ? <img src={favIconUrl} className="list_favicon"/> : <FaIcons.AiFillAlert size={30}/>}
                                 <div className="list_name_title">
                                     <span>{name}</span>
                                     <span>{description}</span>
                                 </div>
                             </td>
-                            <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}/></td>
+                            <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}
+                                                                                     onClick={() => setEditMode(id)}/></td>
                             <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20}
                                                                                      onClick={() => removeLink(id)}/>
                             </td>
