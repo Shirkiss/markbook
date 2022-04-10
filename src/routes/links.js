@@ -17,10 +17,10 @@ router.use('/hello', (req, res) => {
 
 router.post('/saveLink/:id', async (req, res) => {
     try {
-        const {keywords, urlValue, name, caption, isPrivate} = req.body;
+        const {keywords, urlValue, name, caption, isPrivate, favIconUrl} = req.body;
         const userId = req.params.id;
         const keywordsSplit = keywords.split(',');
-        const data = {name, keywordsSplit, caption, isPrivate};
+        const data = {name, keywordsSplit, caption, isPrivate, favIconUrl};
         await redisManager.addLink(userId, urlValue, data);
         const links = await redisManager.getAllLinks(userId);
         setHeaders(res);
@@ -34,11 +34,11 @@ router.post('/saveLink/:id', async (req, res) => {
 
 router.post('/editLink/:id', async (req, res) => {
     try {
-        const {keywords, urlValue, name, caption, isPrivate, originalUrl} = req.body;
+        const {keywords, urlValue, name, caption, isPrivate, favIconUrl, originalUrl} = req.body;
         const userId = req.params.id;
         await redisManager.removeLink(userId, originalUrl);
         const keywordsSplit = keywords.split(',');
-        const data = {name, keywordsSplit, caption, isPrivate};
+        const data = {name, keywordsSplit, caption, isPrivate, favIconUrl};
         await redisManager.addLink(userId, urlValue, data);
         const links = await redisManager.getAllLinks(userId);
         setHeaders(res);
