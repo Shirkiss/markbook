@@ -28,6 +28,16 @@ describe('Elasticsearch tests', function() {
         expect(result.length).to.equal(2);
     })
 
+    it('prefixSearchAllFields should return correct data', async () => {
+        const result = await elasticSearch.prefixSearchAllFields('shi', 1);
+        expect(result.length).to.equal(2);
+    })
+
+    it('getAll should return correct data', async () => {
+        const result = await elasticSearch.getAll( 1);
+        expect(result.length).to.equal(3);
+    })
+
     it('mostFrequentKeywordForUserByPrefix should return correct data', async () => {
         const result = await elasticSearch.mostFrequentKeywordForUserByPrefix(2, 'rec', 4);
         expect(result.length).to.equal(2);

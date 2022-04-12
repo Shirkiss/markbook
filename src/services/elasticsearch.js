@@ -137,6 +137,23 @@ class ElasticSearch {
 
     }
 
+    async getAll(userId) {
+        const result = await this.client.search({
+                index: this.index,
+                body: {
+                    query: {
+                        "bool": {
+                            "must": {
+                                "term": {userId}
+                            },
+                        },
+                    }
+                }
+            }
+        );
+        return result.hits.hits;
+    }
+
 
     async mostFrequentKeyword(limit) {
         const result = await this.client.search({
