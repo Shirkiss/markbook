@@ -10,13 +10,14 @@ describe('keywordsSuggestionService.js tests', function() {
         try {
             elasticSearch = new ElasticSearch('keywords-test');
             await elasticSearch.init();
-            await elasticSearch.addLink('Shirs website', 'www.something.com/id=mai', ['recipe'], 'my first link', 1);
-            await elasticSearch.addLink('Williams website', 'www.something.com/id=lio', ['recipe','something'], 'my second link', 1);
-            await elasticSearch.addLink('Roys website', 'www.check.com/id=lio', ['shir', 'something'], 'my third link', 1);
-            await elasticSearch.addLink('lio website', 'www.check.com/id=no', ['shir', 'sh', 'ketrecipe', 'recket'], 'my fourth link', 2);
-            await elasticSearch.addLink('lio website', 'www.check.com/id=no', ['recipe'], 'my fourth link', 2);
-            await elasticSearch.addLink('lio website', 'www.check.com/id=no', ['shsh', 'sholem', 'rr'], 'my fourth link', 2);
-            await elasticSearch.addLink('lio website', 'www.check.com/id=no', ['shsh'], 'my fourth link', 2);
+
+            await elasticSearch.addLink({name: 'Shirs website', urlValue: 'www.something.com/id=mai', keywords: ['recipe'], caption: 'my first link', userId: 1});
+            await elasticSearch.addLink({name: 'Williams website', urlValue: 'www.something.com/id=lio', keywords: ['recipe','something'], caption: 'my second link', userId: 1});
+            await elasticSearch.addLink({name: 'Roys website', urlValue: 'www.check.com/id=lio', keywords: ['shir'], caption: 'my third link', userId: 1});
+            await elasticSearch.addLink({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['shir', 'sh', 'ketrecipe', 'recket'], caption: 'my fourth link', userId: 2});
+            await elasticSearch.addLink({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['recipe'], caption: 'my fourth link', userId: 2});
+            await elasticSearch.addLink({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['shsh', 'sholem', 'rr'], caption: 'my fourth link', userId: 2});
+            await elasticSearch.addLink({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['shsh'], caption: 'my fourth link', userId: 2});
         } catch {
             await elasticSearch.deleteIndex();
         }
