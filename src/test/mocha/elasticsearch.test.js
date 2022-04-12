@@ -1,5 +1,5 @@
 const {expect} = require('chai');
-const ElasticSearch = require("../../services/elasticsearch");
+const ElasticSearch = require("../../services/elasticsearchManager");
 
 describe('Elasticsearch tests', function() {
     this.timeout(10000);

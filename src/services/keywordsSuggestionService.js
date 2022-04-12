@@ -1,4 +1,4 @@
-const ElasticSearch = require("./elasticsearch");
+const ElasticSearch = require("./elasticsearchManager");
 const elasticSearchClient = new ElasticSearch();
 
 const NUMBER_OF_INITIAL_KEYWORDS_SUGGESTIONS = 4;

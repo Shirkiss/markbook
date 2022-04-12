@@ -1,5 +1,5 @@
 const {expect} = require('chai');
-const ElasticSearch = require("../../services/elasticsearch");
+const ElasticSearch = require("../../services/elasticsearchManager");
 const keywordsSuggestionService = require("../../services/keywordsSuggestionService");
 
 describe('keywordsSuggestionService.js tests', function() {

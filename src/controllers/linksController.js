@@ -1,13 +1,11 @@
-const redisManager = require('../redisManager');
+const redisManager = require('../services/redisManager');
+const elasticSearchController = require('./elasticsearchController');
 
 async function saveLink(req, res, next) {
     try {
-        const {keywords, urlValue, name, caption, isPrivate, favIconUrl} = req.body;
-        const userId = req.params.id;
-        const keywordsSplit = keywords.split(',');
-        const data = {name, keywordsSplit, caption, isPrivate, favIconUrl};
-        await redisManager.addLink(userId, urlValue, data);
-        const links = await redisManager.getAllLinks(userId);
+        const userId = req.params.userId;
+        await elasticSearchController.saveLink(req.body, userId);
+        const links = await elasticSearchController.getAll(userId);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -18,13 +16,9 @@ async function saveLink(req, res, next) {
 
 async function editLink(req, res, next) {
     try {
-        const {keywords, urlValue, name, caption, isPrivate, favIconUrl, originalUrl} = req.body;
-        const userId = req.params.id;
-        await redisManager.removeLink(userId, originalUrl);
-        const keywordsSplit = keywords.split(',');
-        const data = {name, keywordsSplit, caption, isPrivate, favIconUrl};
-        await redisManager.addLink(userId, urlValue, data);
-        const links = await redisManager.getAllLinks(userId);
+        const {userId, linkId} = req.params;
+        await elasticSearchController.editLink(userId, linkId, req.body);
+        const links = await elasticSearchController.getAll(userId);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -35,10 +29,9 @@ async function editLink(req, res, next) {
 
 async function removeLink(req, res, next) {
     try {
-        let {urlValue} = req.body;
-        const userId = req.params.id;
-        await redisManager.removeLink(userId, urlValue);
-        const links = await redisManager.getAllLinks(userId);
+        const {userId, linkId} = req.params;
+        await elasticSearchController.removeLink(linkId);
+        const links = await elasticSearchController.getAll(userId);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -49,8 +42,8 @@ async function removeLink(req, res, next) {
 
 async function removeAllLinks(req, res, next) {
     try {
-        const userId = req.params.id;
-        await redisManager.removeAllLinks(userId);
+        const {userId} = req.params;
+        await elasticSearchController.removeAllLinks(userId);
         res.send({message: 'All links removed successfully'});
     } catch (error) {
         res.statusCode(500);
@@ -61,8 +54,8 @@ async function removeAllLinks(req, res, next) {
 
 async function getAllLinks(req, res, next) {
     try {
-        const userId = req.params.id;
-        const links = await redisManager.getAllLinks(userId);
+        const {userId} = req.params;
+        const links = await elasticSearchController.getAll(userId);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -73,9 +66,8 @@ async function getAllLinks(req, res, next) {
 
 async function getLink(req, res, next) {
     try {
-        let {urlValue} = req.body;
-        const userId = req.params.id;
-        const link = await redisManager.getLink(userId, urlValue);
+        const {linkId} = req.params;
+        const link = await elasticSearchController.getLink(linkId);
         res.send(link);
     } catch (error) {
         res.statusCode(500);
