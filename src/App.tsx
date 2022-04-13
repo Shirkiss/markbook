@@ -29,8 +29,6 @@ export const App = () => {
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
     const [originalUrl, setOriginalUrl] = useState<string>('');
 
-    const db = process.env["DB"];
-
     /**
      * Get current URL
      */
@@ -71,13 +69,13 @@ export const App = () => {
 
     }
 
-    function updateTagList(tagListObject: any) {
+    function updateLinkList(tagListObject: any) {
         let arr: Link[] = [];
 
         Object.keys(tagListObject).map(function (key) {
             const obj: any = JSON.parse(tagListObject[key]);
             console.log("The data is : ", obj);
-            let currentTag: Link = {
+            let currentLink: Link = {
                 name: obj.name,
                 caption: obj.caption,
                 id: key,
@@ -86,7 +84,7 @@ export const App = () => {
                 favIconUrl: obj.favIconUrl,
                 isPrivate: obj.isPrivate,
             }
-            arr.push(currentTag)
+            arr.push(currentLink)
             return arr;
         });
         console.log("The data is final: ", arr);
@@ -102,53 +100,43 @@ export const App = () => {
             },
         });
         const result = await response.json();
-        updateTagList(result);
+        updateLinkList(result);
     }
 
     /**
      * Save link
      */
     const saveLink = () => {
-        if (db === 'local-storage') {
-            // local storage
-            chrome.storage.sync.get('links', ({links}) => {
-                links[urlValue] = {name, 'keywords': keywords.split(','), caption};
-                chrome.storage.sync.set({links});
-                console.log(JSON.stringify(links));
-            });
-        } else {
-            // redis
-            chrome.storage.sync.get('userId', ({userId}) => {
-                const fetchData = async () => {
-                    let data = new URLSearchParams({
-                        name,
-                        keywords,
-                        caption,
-                        urlValue,
-                        isPrivate: isPrivate.toString(),
-                        favIconUrl,
-                        originalUrl,
-                    });
-                    let saveFunction = isInEditMode ? 'editLink' : 'saveLink';
-                    await fetch(`http://localhost:8000/${saveFunction}/${userId}`, {
+        chrome.storage.sync.get('userId', ({userId}) => {
+            const fetchData = async () => {
+                let data = new URLSearchParams({
+                    name,
+                    keywords,
+                    caption,
+                    urlValue,
+                    isPrivate: isPrivate.toString(),
+                    favIconUrl,
+                    originalUrl,
+                });
+                let saveFunction = isInEditMode ? 'editLink' : 'saveLink';
+                await fetch(`http://localhost:8000/${saveFunction}/${userId}`, {
 
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: data,
-                    }).then((response) => {
-                        response.json().then(data => {
-                            // do something with your data
-                            console.log("MAi the data is:" , data);
-                            updateTagList(data);
-                        });
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data,
+                }).then((response) => {
+                    response.json().then(data => {
+                        // do something with your data
+                        console.log("MAi the data is:", data);
+                        updateLinkList(data);
                     });
-                };
-                fetchData();
-            })
-        }
+                });
+            };
+            fetchData();
+        })
         setCurrentTab(LIST);
     };
 
@@ -156,36 +144,26 @@ export const App = () => {
      * Remove link
      */
     const removeLink = (urlValue: string) => {
-        if (db === 'local-storage') {
-            // local storage
-            chrome.storage.sync.get('links', ({links}) => {
-                delete links[urlValue];
-                chrome.storage.sync.set({links});
-                console.log(JSON.stringify(links));
-            });
-        } else {
-            // redis
-            chrome.storage.sync.get('userId', ({userId}) => {
-                const fetchData = async () => {
-                    let data = new URLSearchParams({urlValue});
-                    const response: any = await fetch(`http://localhost:8000/removeLink/${userId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: data,
-                    }).then((response) => {
-                        response.json().then(data => {
-                            // do something with your data
-                            updateTagList(data);
-                        });
+        chrome.storage.sync.get('userId', ({userId}) => {
+            const fetchData = async () => {
+                let data = new URLSearchParams({urlValue});
+                const response: any = await fetch(`http://localhost:8000/removeLink/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data,
+                }).then((response) => {
+                    response.json().then(data => {
+                        // do something with your data
+                        updateLinkList(data);
                     });
+                });
 
-                };
-                fetchData();
-            })
-        }
+            };
+            fetchData();
+        })
         setCurrentTab(LIST);
     };
 
@@ -206,23 +184,23 @@ export const App = () => {
     };
 
     function onChangeTab(tab: string) {
-       setIsInEditMode(false);
-       getTabData();
-       setIsPrivate(false);
-       setCurrentTab(tab);
+        setIsInEditMode(false);
+        getTabData();
+        setIsPrivate(false);
+        setCurrentTab(tab);
     }
 
     function getTabData() {
         const queryInfo = {active: true, lastFocusedWindow: true};
 
         chrome.tabs && chrome.tabs.query(queryInfo, tabs => {
-           const url = tabs[0].url || '';
-           const name = tabs[0].title || '';
-           const favIconUrl = tabs[0].favIconUrl || '';
-           setUrl(url);
-           setName(name);
-           setFavIconUrl(favIconUrl);
-       });
+            const url = tabs[0].url || '';
+            const name = tabs[0].title || '';
+            const favIconUrl = tabs[0].favIconUrl || '';
+            setUrl(url);
+            setName(name);
+            setFavIconUrl(favIconUrl);
+        });
     }
 
     function setPrivateState() {
@@ -253,7 +231,8 @@ export const App = () => {
 
                 <div className="tab_footer">
                     <div className="tab_checkbox">
-                        <input type="checkbox" id="private" name="scales" checked={isPrivate.toString() == 'true'} onChange={setPrivateState}/>
+                        <input type="checkbox" id="private" name="scales" checked={isPrivate.toString() == 'true'}
+                               onChange={setPrivateState}/>
                         <label htmlFor="private">Private</label>
                     </div>
                     <button className="tab_button" onClick={() => removeLink(urlValue)}>Remove</button>
@@ -272,14 +251,16 @@ export const App = () => {
                                   }) => (
                         <tr className="list_row" key={id}>
                             <td className="list_name">
-                                {favIconUrl !== '' ? <img src={favIconUrl} className="list_favicon"/> : <FaIcons.AiFillAlert size={30}/>}
+                                {favIconUrl !== '' ? <img src={favIconUrl} className="list_favicon"/> :
+                                    <FaIcons.AiFillAlert size={30}/>}
                                 <div className="list_name_title">
                                     <span>{name}</span>
                                     <span>{description}</span>
                                 </div>
                             </td>
                             <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}
-                                                                                     onClick={() => setEditMode(id)}/></td>
+                                                                                    onClick={() => setEditMode(id)}/>
+                            </td>
                             <td className="list_first_icon"><FaIcons.AiTwotoneDelete size={20}
                                                                                      onClick={() => removeLink(id)}/>
                             </td>
