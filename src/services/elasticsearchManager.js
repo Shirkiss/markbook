@@ -29,6 +29,9 @@ class ElasticsearchManager {
                         "properties": {
                             "timestamp": {
                                 "type": "date",
+                            },
+                            "userId": {
+                                "type": "text",
                             }
                         }
                     }

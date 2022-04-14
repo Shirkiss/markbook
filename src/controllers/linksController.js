@@ -4,7 +4,7 @@ const elasticSearchController = require('./elasticsearchController');
 async function saveLink(req, res, next) {
     try {
         const userId = req.params.userId;
-        await elasticSearchController.saveLink(req.body, userId);
+        await elasticSearchController.saveLink(userId, req.body);
         const links = await elasticSearchController.getAll(userId);
         res.send(links);
     } catch (error) {
