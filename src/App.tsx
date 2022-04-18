@@ -7,6 +7,7 @@ import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
 
 export interface Link {
     id: string;
+    urlValue: string;
     name: string;
     description: string;
     caption: string;
@@ -17,6 +18,7 @@ export interface Link {
 
 export const App = () => {
     const [currentTab, setCurrentTab] = useState<string>(TAB_INFO);
+    const [linkId, setLinkId] = useState<string>('');
     const [urlValue, setUrl] = useState<string>('');
     const [name, setName] = useState<string>('');
     const [favIconUrl, setFavIconUrl] = useState<string>('');
@@ -48,6 +50,7 @@ export const App = () => {
     function setEditMode(itemId: string) {
         setIsInEditMode(true);
         setCurrentTab(TAB_INFO);
+        setLinkId(itemId);
         const curr = tagList.find(item => item.id === itemId);
         setOriginalUrl(curr?.id || '');
         setCaption(curr?.caption || '');
@@ -69,27 +72,49 @@ export const App = () => {
 
     }
 
-    function updateLinkList(tagListObject: any) {
+    function updateLinkList(linkListObject: Array<object>) {
         let arr: Link[] = [];
-
-        Object.keys(tagListObject).map(function (key) {
-            const obj: any = JSON.parse(tagListObject[key]);
-            console.log("The data is : ", obj);
+        // @ts-ignore
+        linkListObject.forEach((arrayItem: { '_source': object, '_id': string }) => {
+            console.log(arrayItem);
+            const obj: any = arrayItem['_source']
             let currentLink: Link = {
+                urlValue: obj.urlValue,
                 name: obj.name,
                 caption: obj.caption,
-                id: key,
+                id: arrayItem['_id'],
                 description: "My description",
                 keywords: obj.keywordsSplit,
                 favIconUrl: obj.favIconUrl,
                 isPrivate: obj.isPrivate,
-            }
-            arr.push(currentLink)
-            return arr;
+            };
+            arr.push(currentLink);
         });
         console.log("The data is final: ", arr);
         setTagList(arr);
     }
+
+//     function updateLinkList(tagListObject: any) {
+//         let arr: Link[] = [];
+//
+//         Object.keys(tagListObject).map(function (key) {
+//             const obj: any = JSON.parse(tagListObject[key]);
+//             console.log("The data is : ", obj);
+//             let currentLink: Link = {
+//                 name: obj.name,
+//                 caption: obj.caption,
+//                 id: key,
+//                 description: "My description",
+//                 keywords: obj.keywordsSplit,
+//                 favIconUrl: obj.favIconUrl,
+//                 isPrivate: obj.isPrivate,
+//             }
+//             arr.push(currentLink)
+//             return arr;
+//         });
+//         console.log("The data is final: ", arr);
+//         setTagList(arr);
+//     }
 
     async function getAllLinks(userId: string) {
         const response = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
@@ -118,8 +143,9 @@ export const App = () => {
                     favIconUrl,
                     originalUrl,
                 });
-                let saveFunction = isInEditMode ? 'editLink' : 'saveLink';
-                await fetch(`http://localhost:8000/${saveFunction}/${userId}`, {
+
+                let saveFunction = isInEditMode ? `editLink/${userId}/${linkId}` : `saveLink/${userId}`;
+                await fetch(`http://localhost:8000/${saveFunction}`, {
 
                     method: 'POST',
                     headers: {
@@ -235,7 +261,7 @@ export const App = () => {
                                onChange={setPrivateState}/>
                         <label htmlFor="private">Private</label>
                     </div>
-                    <button className="tab_button" onClick={() => removeLink(urlValue)}>Remove</button>
+                    <button className="tab_button" onClick={() => removeLink(linkId)}>Remove</button>
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}
