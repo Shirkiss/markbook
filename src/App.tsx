@@ -7,6 +7,7 @@ import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
 
 export interface Link {
     id: string;
+    urlValue: string;
     name: string;
     description: string;
     caption: string;
@@ -14,9 +15,12 @@ export interface Link {
     favIconUrl: string;
     isPrivate: boolean;
 }
+export interface IElasticObject { _id: string; _source: any }
+
 
 export const App = () => {
     const [currentTab, setCurrentTab] = useState<string>(TAB_INFO);
+    const [linkId, setLinkId] = useState<string>('');
     const [urlValue, setUrl] = useState<string>('');
     const [name, setName] = useState<string>('');
     const [favIconUrl, setFavIconUrl] = useState<string>('');
@@ -27,7 +31,6 @@ export const App = () => {
     const [isInEditMode, setIsInEditMode] = useState<boolean>(false);
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
-    const [originalUrl, setOriginalUrl] = useState<string>('');
 
     /**
      * Get current URL
@@ -48,12 +51,12 @@ export const App = () => {
     function setEditMode(itemId: string) {
         setIsInEditMode(true);
         setCurrentTab(TAB_INFO);
+        setLinkId(itemId);
         const curr = tagList.find(item => item.id === itemId);
-        setOriginalUrl(curr?.id || '');
         setCaption(curr?.caption || '');
         setIsPrivate(curr?.isPrivate || false);
         setFavIconUrl(curr?.favIconUrl || '');
-        setUrl(curr?.id || '');
+        setUrl(curr?.urlValue || '');
         setName(curr?.name || '')
         setKeywords(curr?.keywords || '');
     }
@@ -69,27 +72,26 @@ export const App = () => {
 
     }
 
-    function updateLinkList(tagListObject: any) {
+    function updateLinkList(linkListObject: Array<IElasticObject>) {
         let arr: Link[] = [];
-
-        Object.keys(tagListObject).map(function (key) {
-            const obj: any = JSON.parse(tagListObject[key]);
-            console.log("The data is : ", obj);
+         linkListObject.map(item =>  {
+            const obj: any = item._source;
             let currentLink: Link = {
-                name: obj.name,
-                caption: obj.caption,
-                id: key,
-                description: "My description",
-                keywords: obj.keywordsSplit,
-                favIconUrl: obj.favIconUrl,
-                isPrivate: obj.isPrivate,
-            }
-            arr.push(currentLink)
-            return arr;
-        });
-        console.log("The data is final: ", arr);
+                    urlValue: obj.urlValue,
+                    name: obj.name,
+                    caption: obj.caption,
+                    id: item._id,
+                    description: "My description",
+                    keywords: obj.keywordsSplit,
+                    favIconUrl: obj.favIconUrl,
+                    isPrivate: obj.isPrivate,
+                };
+            arr.push(currentLink);
+         })
+
         setTagList(arr);
     }
+
 
     async function getAllLinks(userId: string) {
         const response = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
@@ -100,6 +102,7 @@ export const App = () => {
             },
         });
         const result = await response.json();
+
         updateLinkList(result);
     }
 
@@ -116,10 +119,10 @@ export const App = () => {
                     urlValue,
                     isPrivate: isPrivate.toString(),
                     favIconUrl,
-                    originalUrl,
                 });
-                let saveFunction = isInEditMode ? 'editLink' : 'saveLink';
-                await fetch(`http://localhost:8000/${saveFunction}/${userId}`, {
+
+                let saveFunction = isInEditMode ? `editLink/${userId}/${linkId}` : `saveLink/${userId}`;
+                await fetch(`http://localhost:8000/${saveFunction}`, {
 
                     method: 'POST',
                     headers: {
@@ -143,17 +146,17 @@ export const App = () => {
     /**
      * Remove link
      */
-    const removeLink = (urlValue: string) => {
+    const removeLink = (linkId: string) => {
         chrome.storage.sync.get('userId', ({userId}) => {
             const fetchData = async () => {
-                let data = new URLSearchParams({urlValue});
-                const response: any = await fetch(`http://localhost:8000/removeLink/${userId}`, {
+                //let data = new URLSearchParams({id});
+                const response: any = await fetch(`http://localhost:8000/removeLink/${userId}/${linkId}`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: data,
+                    //body: data,
                 }).then((response) => {
                     response.json().then(data => {
                         // do something with your data
@@ -235,7 +238,7 @@ export const App = () => {
                                onChange={setPrivateState}/>
                         <label htmlFor="private">Private</label>
                     </div>
-                    <button className="tab_button" onClick={() => removeLink(urlValue)}>Remove</button>
+                    <button className="tab_button" onClick={() => removeLink(linkId)}>Remove</button>
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}

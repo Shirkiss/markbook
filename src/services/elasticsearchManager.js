@@ -1,6 +1,6 @@
 const {Client} = require('@elastic/elasticsearch');
 
-class ElasticSearch {
+class ElasticsearchManager {
     constructor(index) {
         this.client = new Client({
             cloud: {
@@ -29,6 +29,9 @@ class ElasticSearch {
                         "properties": {
                             "timestamp": {
                                 "type": "date",
+                            },
+                            "userId": {
+                                "type": "text",
                             }
                         }
                     }
@@ -45,8 +48,19 @@ class ElasticSearch {
         await this.client.delete({index: this.index, id});
     }
 
-    async editLink(id, name, urlValue, keywords, caption, userId, timestamp) {
-        let data = {name, urlValue, keywords, caption, userId, timestamp};
+    async deleteByUserId(userId) {
+        await this.client.deleteByQuery({
+            index: this.index, body: {
+                query: {
+                    match: {
+                        userId
+                    }
+                }
+            }
+        });
+    }
+
+    async editLink(id, data) {
         data['lastEditTime'] = new Date();
         await this.client.index({
             index: this.index,
@@ -56,8 +70,7 @@ class ElasticSearch {
         await this.client.indices.refresh({index: this.index})
     }
 
-    async addLink(name, urlValue, keywords, caption, userId) {
-        let data = {name, urlValue, keywords, caption, userId};
+    async addLink(data) {
         data['timestamp'] = new Date();
         await this.client.index({
             index: this.index,
@@ -109,6 +122,15 @@ class ElasticSearch {
                         },
                     }
                 }
+            }
+        )
+        return result.hits.hits;
+    }
+
+    async getById(id) {
+        const result = await this.client.get({
+                index: this.index,
+                id
             }
         )
         return result.hits.hits;
@@ -228,4 +250,4 @@ class ElasticSearch {
     }
 }
 
-module.exports = ElasticSearch;
+module.exports = ElasticsearchManager;
