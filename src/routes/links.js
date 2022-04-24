@@ -15,4 +15,6 @@ router.post('/getAllLinks/:userId', [services.setHeaders, linksController.getAll
 
 router.use('/getLink/:linkId', [services.setHeaders, linksController.getLink]);
 
+router.use('/searchAll/:userId', [services.setHeaders, linksController.searchAll]);
+
 module.exports = router;

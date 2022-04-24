@@ -1,4 +1,3 @@
-const redisManager = require('../services/redisManager');
 const elasticSearchController = require('./elasticsearchController');
 
 async function saveLink(req, res, next) {
@@ -40,6 +39,18 @@ async function removeLink(req, res, next) {
     next();
 }
 
+async function searchAll(req, res, next) {
+    try {
+        const {userId} = req.params;
+        const links = await elasticSearchController.searchAll(userId, req.body);
+        res.send(links);
+    } catch (error) {
+        res.statusCode(500);
+        res.send({message: 'Failed to search', error});
+    }
+    next();
+}
+
 async function removeAllLinks(req, res, next) {
     try {
         const {userId} = req.params;
@@ -77,5 +88,5 @@ async function getLink(req, res, next) {
 }
 
 module.exports = {
-    saveLink, editLink, removeLink, removeAllLinks, getAllLinks, getLink
+    saveLink, editLink, removeLink, removeAllLinks, getAllLinks, getLink, searchAll
 }

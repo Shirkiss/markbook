@@ -41,5 +41,11 @@ async function getAll(userId) {
     return await elasticSearch.getAll(userId);
 }
 
-module.exports = {saveLink, getAll, editLink, removeLink, removeAllLinks, getLink};
+async function searchAll(userId, data) {
+    const {prefix} = data;
+    const elasticSearch = await initClient(ELASTICSEARCH_LINKS_INDEX);
+    return await elasticSearch.prefixSearchAllFields(prefix, userId);
+}
+
+module.exports = {saveLink, getAll, editLink, removeLink, removeAllLinks, getLink, searchAll};
 
