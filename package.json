@@ -53,6 +53,7 @@
     "build": "npm-run-all build:*",
     "build:app": "INLINE_RUNTIME_CHUNK=false react-scripts build && mv build ./src/build",
     "build:bg": "webpack --mode production ./src/background.js --output-path ./src/build --output-filename background.js",
+    "build:options": "webpack --mode production ./src/options.js --output-path ./src/build --output-filename options.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "watch": "npm-watch"
