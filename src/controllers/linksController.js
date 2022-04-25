@@ -1,10 +1,14 @@
-const elasticSearchController = require('./elasticsearchController');
+const elasticsearchManager = require('../services/elasticsearchManager');
+const ELASTICSEARCH_LINKS_INDEX = 'links';
 
 async function saveLink(req, res, next) {
     try {
-        const userId = req.params.userId;
-        await elasticSearchController.saveLink(userId, req.body);
-        const links = await elasticSearchController.getAll(userId);
+        const {userId} = req.params;
+        const data = req.body;
+        data['keywords'] = data.keywords.split(',');
+        data.userId = userId;
+        await elasticsearchManager.addDocument(data, ELASTICSEARCH_LINKS_INDEX);
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -16,25 +20,28 @@ async function saveLink(req, res, next) {
 async function editLink(req, res, next) {
     try {
         const {userId, linkId} = req.params;
-        await elasticSearchController.editLink(userId, linkId, req.body);
-        const links = await elasticSearchController.getAll(userId);
+        const data = req.body;
+        data['keywords'] = data.keywords.split(',');
+        data.userId = userId;
+        await elasticsearchManager.editDocument(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
-        res.send({message: 'Failed to save link', error});
+        res.send({message: 'Failed to edit link', error});
     }
     next();
 }
 
-async function removeLink(req, res, next) {
+async function deleteLink(req, res, next) {
     try {
         const {userId, linkId} = req.params;
-        await elasticSearchController.removeLink(linkId);
-        const links = await elasticSearchController.getAll(userId);
+        await elasticsearchManager.deleteById(linkId, ELASTICSEARCH_LINKS_INDEX)
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
-        res.send({message: 'Failed to remove link', error});
+        res.send({message: 'Failed to delete link', error});
     }
     next();
 }
@@ -42,7 +49,8 @@ async function removeLink(req, res, next) {
 async function searchAll(req, res, next) {
     try {
         const {userId} = req.params;
-        const links = await elasticSearchController.searchAll(userId, req.body);
+        const {prefix} = req.body;
+        const links = await elasticsearchManager.prefixSearchAllFields(prefix, userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -51,14 +59,14 @@ async function searchAll(req, res, next) {
     next();
 }
 
-async function removeAllLinks(req, res, next) {
+async function deleteAllLinks(req, res, next) {
     try {
         const {userId} = req.params;
-        await elasticSearchController.removeAllLinks(userId);
-        res.send({message: 'All links removed successfully'});
+        await elasticsearchManager.deleteByUserId(userId, ELASTICSEARCH_LINKS_INDEX);
+        res.send({message: 'All links deleted successfully'});
     } catch (error) {
         res.statusCode(500);
-        res.send({message: 'Failed to remove all links', error});
+        res.send({message: 'Failed to delete all links', error});
     }
     next();
 }
@@ -66,7 +74,7 @@ async function removeAllLinks(req, res, next) {
 async function getAllLinks(req, res, next) {
     try {
         const {userId} = req.params;
-        const links = await elasticSearchController.getAll(userId);
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
         res.statusCode(500);
@@ -78,7 +86,7 @@ async function getAllLinks(req, res, next) {
 async function getLink(req, res, next) {
     try {
         const {linkId} = req.params;
-        const link = await elasticSearchController.getLink(linkId);
+        const link = await elasticsearchManager.getById(linkId, ELASTICSEARCH_LINKS_INDEX);
         res.send(link);
     } catch (error) {
         res.statusCode(500);
@@ -88,5 +96,5 @@ async function getLink(req, res, next) {
 }
 
 module.exports = {
-    saveLink, editLink, removeLink, removeAllLinks, getAllLinks, getLink, searchAll
+    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll
 }

@@ -7,9 +7,9 @@ router.post('/saveLink/:userId', [services.setHeaders, linksController.saveLink]
 
 router.post('/editLink/:userId/:linkId', [services.setHeaders, linksController.editLink]);
 
-router.use('/removeLink/:userId/:linkId', [services.setHeaders, linksController.removeLink]);
+router.use('/removeLink/:userId/:linkId', [services.setHeaders, linksController.deleteLink]);
 
-router.use('/removeAllLinks/:userId', [services.setHeaders, linksController.removeAllLinks]);
+router.use('/removeAllLinks/:userId', [services.setHeaders, linksController.deleteAllLinks]);
 
 router.post('/getAllLinks/:userId', [services.setHeaders, linksController.getAllLinks]);
 
