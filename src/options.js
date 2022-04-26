@@ -1,34 +1,66 @@
-// Saves options to chrome.storage
 function save_options() {
-    var userName = document.getElementById('userName').value;
-    var isPrivate = document.getElementById('isPrivate').checked;
+    let userName = document.getElementById('userName').value;
+    let isPrivate = document.getElementById('isPrivate').checked;
+
+    chrome.storage.sync.get('userId', ({userId}) => {
+        const field = 'name';
+        const value = userName;
+        const data = new URLSearchParams({field, value});
+        // update in redis.
+        const fetchData = async () => {
+            await fetch(`http://localhost:8000/user/addUserInfoField/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: data
+            });
+        };
+        fetchData();
+    })
+
+    // update on chrome.storage
     chrome.storage.sync.set({
-        userName,
         isPrivate
-    }, function() {
+    }, function () {
         // Update status to let user know options were saved.
         let status = document.getElementById('status');
         status.textContent = 'Options saved.';
-        setTimeout(function() {
+        setTimeout(function () {
             status.textContent = '';
         }, 750);
     });
 }
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
 function restore_options() {
-    // Use default value color = 'red' and likesColor = true.
-    chrome.storage.sync.get('userEmail', ({userEmail}) => {
+    chrome.storage.sync.get('userId', ({userId}) => {
+        const field = 'name';
+        // stored in redis.
+        const fetchData = async () => {
+            await fetch(`http://localhost:8000/user/getUserInfoField/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({field})
+            }).then((response) => {
+                response.json().then(result => {
+                    document.getElementById('userName').value = result.name;
+                });
+            });
+        };
+        fetchData();
+        // stored in chrome.storage.
         chrome.storage.sync.get({
             isPrivate: false,
-            userName: userEmail
-        }, function(items) {
-            document.getElementById('userName').value = items.userName;
+        }, function (items) {
             document.getElementById('isPrivate').checked = items.isPrivate;
         });
     })
 }
+
 document.addEventListener('DOMContentLoaded', restore_options);
 document.getElementById('save').addEventListener('click',
     save_options);

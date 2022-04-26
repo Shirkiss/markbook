@@ -95,7 +95,7 @@ export const App = () => {
 
 
     async function getAllLinks(userId: string) {
-        const response = await fetch(`http://localhost:8000/getAllLinks/${userId}`, {
+        const response = await fetch(`http://localhost:8000/links/getAllLinks/${userId}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -123,7 +123,7 @@ export const App = () => {
                 });
 
                 let saveFunction = isInEditMode ? `editLink/${userId}/${linkId}` : `saveLink/${userId}`;
-                await fetch(`http://localhost:8000/${saveFunction}`, {
+                await fetch(`http://localhost:8000/links/${saveFunction}`, {
 
                     method: 'POST',
                     headers: {
@@ -151,7 +151,7 @@ export const App = () => {
         chrome.storage.sync.get('userId', ({userId}) => {
             const fetchData = async () => {
                 //let data = new URLSearchParams({id});
-                const response: any = await fetch(`http://localhost:8000/removeLink/${userId}/${linkId}`, {
+                const response: any = await fetch(`http://localhost:8000/links/removeLink/${userId}/${linkId}`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -220,7 +220,7 @@ export const App = () => {
             getAllLinks(userId);
         } else {
             let data = new URLSearchParams({prefix: value});
-            const response = await fetch(`http://localhost:8000/searchAll/${userId}`, {
+            const response = await fetch(`http://localhost:8000/links/searchAll/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

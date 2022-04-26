@@ -1,5 +1,6 @@
 const express = require('express');
 const linksManager = require('./routes/links');
+const userManager = require('./routes/user');
 const path = require('path');
 const redisManager = require('./services/redisManager');
 
@@ -14,7 +15,8 @@ app.use(express.urlencoded({extended: false}));
 // parse application/json
 app.use(express.json());
 
-app.use('/', linksManager);
+app.use('/links', linksManager);
+app.use('/user', userManager);
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname + '/build/index.html'));

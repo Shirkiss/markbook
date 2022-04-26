@@ -9,8 +9,26 @@ const addLink = async (userId, urlValue, data) => {
     await client.HSET(`links:${userId}`, urlValue, JSON.stringify(data));
 };
 
+const addUserInfoField = async (userId, field, value) => {
+    await client.HSET(`users:${userId}`, field, value);
+};
+
+const addUserInfo = async (userId, data) => {
+    for (const field in data) {
+        await client.HSET(`users:${userId}`, field, data[field]);
+    }
+};
+
 const getAllLinks = async (userId) => {
     return await client.HGETALL(`links:${userId}`);
+};
+
+const getAllUserInfo = async (userId) => {
+    return await client.HGETALL(`users:${userId}`);
+};
+
+const getUserInfo = async (userId, field) => {
+    return await client.HGET(`users:${userId}`, field);
 };
 
 const getLink = async (userId, urlValue) => {
@@ -26,4 +44,15 @@ const removeAllLinks = async (userId) => {
 };
 
 
-module.exports = {getLink, getAllLinks, addLink, removeLink, start, removeAllLinks};
+module.exports = {
+    getLink,
+    getAllLinks,
+    addLink,
+    removeLink,
+    start,
+    removeAllLinks,
+    addUserInfo,
+    getAllUserInfo,
+    getUserInfo,
+    addUserInfoField
+};
