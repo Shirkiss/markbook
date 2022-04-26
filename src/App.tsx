@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Sidebar from './components/Sidebar';
+import SearchBox from './components/SearchBox';
 import {getFavicon} from './services/services';
 import * as FaIcons from 'react-icons/ai'
 import './App.css';
@@ -214,6 +215,25 @@ export const App = () => {
         }
     }
 
+    async function searchForPrefix(value: string) {
+        if (value === "") {
+            getAllLinks(userId);
+        } else {
+            let data = new URLSearchParams({prefix: value});
+            const response = await fetch(`http://localhost:8000/searchAll/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: data,
+            });
+            const result = await response.json();
+
+            updateLinkList(result);
+        }
+    }
+
     return (
         <div className="App">
             <Sidebar setCurrentTab={onChangeTab} currentTab={currentTab}/>
@@ -243,6 +263,7 @@ export const App = () => {
                 </div>
             </div>}
             {currentTab === LIST && <div id="user-links-page">
+                <SearchBox onSearchChange={searchForPrefix}/>
                 <table className="list_table">
                     {tagList.map(({
                                       id,
