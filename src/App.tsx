@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import Sidebar from './components/Sidebar';
 import SearchBox from './components/SearchBox';
+import HistoryTab from './components/HistoryTab';
 import {getFavicon} from './services/services';
 import * as FaIcons from 'react-icons/ai'
+import {IHistory} from './interfaces/IHistory';
 import './App.css';
 import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
 
@@ -32,6 +34,7 @@ export const App = () => {
     const [isInEditMode, setIsInEditMode] = useState<boolean>(false);
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
+    const [historyList, setHistoryList] = useState<Array<IHistory>>([]);
 
     /**
      * Get current URL
@@ -41,6 +44,7 @@ export const App = () => {
             const currId = await setCurrentUserId();
             console.log(userId);
             await getAllLinks(currId);
+            getHistory();
         }
 
         if (urlValue == '') {
@@ -174,16 +178,16 @@ export const App = () => {
 
     const getHistory = () => {
         chrome.history.search({text: '', maxResults: 20}, function (data) {
-            const userHistoryItems: { favicon: string; typedCount?: number | undefined; title?: string | undefined; url?: string | undefined; lastVisitTime?: number | undefined; visitCount?: number | undefined; id: string; }[] = [];
+            const userHistoryItems: Array<IHistory> = [];
             data.forEach(function (page) {
                 if (page.url) {
                     userHistoryItems.push({
                         ...page,
-                        favicon: favIconUrl
+                        favicon: getFavicon(page.url),
                     })
                 }
             });
-            return userHistoryItems;
+            setHistoryList(userHistoryItems);
         });
     };
 
@@ -262,6 +266,7 @@ export const App = () => {
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}
+            {currentTab === HISTORY && <HistoryTab historyList={historyList} />}
             {currentTab === LIST && <div id="user-links-page">
                 <SearchBox onSearchChange={searchForPrefix}/>
                 <table className="list_table">
