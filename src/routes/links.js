@@ -5,6 +5,8 @@ const services = require('../services/services');
 
 router.post('/saveLink/:userId', [services.setHeaders, linksController.saveLink]);
 
+router.post('/saveLinks/:userId', [services.setHeaders, linksController.saveLinks]);
+
 router.post('/editLink/:userId/:linkId', [services.setHeaders, linksController.editLink]);
 
 router.use('/removeLink/:userId/:linkId', [services.setHeaders, linksController.deleteLink]);

@@ -16,7 +16,8 @@
     "storage",
     "history",
     "identity",
-    "identity.email"
+    "identity.email",
+    "bookmarks"
   ],
   "icons": {
     "16": "markbook-icon.png",
