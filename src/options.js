@@ -1,5 +1,5 @@
 const {getFavicon} = require('./services/services');
-const IMPORTED_BOOKMARK_CAPTION = 'imported bookmark'
+const IMPORTED_BOOKMARK_CAPTION = 'imported bookmark';
 
 function import_bookmarks() {
     chrome.bookmarks.getTree((bookmarkTreeNode) => {
