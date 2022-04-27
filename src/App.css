@@ -14,6 +14,10 @@
    width: 70%;
 }
 
+.history_search {
+    margin-left: 40px;
+}
+
 .tab_input_with_label {
     border-radius: 6px;
     height: 30px;

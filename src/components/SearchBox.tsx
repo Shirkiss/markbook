@@ -28,8 +28,6 @@ const Input = styled.input`
 const SearchBox: React.FunctionComponent<{onSearchChange:Function}> = ({onSearchChange}) => {
    const [search, setSearch] = useState<string>('');
 
-    // clear - x button or clear field
-
     let handleChange = (event:any) => {
         setSearch(event.target.value)
         if (event.target.value.length > 1 || event.target.value.length == 0) {
