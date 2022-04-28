@@ -1,4 +1,3 @@
-const {getFavicon} = require('./services/services');
 const IMPORTED_BOOKMARK_CAPTION = 'imported bookmark';
 
 function import_bookmarks() {
@@ -11,7 +10,6 @@ function import_bookmarks() {
                     return {
                         name: bookmark.title,
                         urlValue: bookmark.url,
-                        favIconUrl: getFavicon(bookmark.url),
                         isPrivate: items.isPrivate,
                         caption: IMPORTED_BOOKMARK_CAPTION
                     }
@@ -20,7 +18,7 @@ function import_bookmarks() {
                 const linksArray = JSON.stringify(formattedBookmarks);
 
                 const fetchData = async () => {
-                    await fetch(`http://localhost:8000/links/saveLinks/${items.userId}`, {
+                    await fetch(`http://localhost:8000/links/addFaviconAndSaveLinks/${items.userId}`, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',

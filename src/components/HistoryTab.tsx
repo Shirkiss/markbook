@@ -3,7 +3,7 @@ import * as FaIcons from 'react-icons/ai'
 import styled from 'styled-components'
 import SearchBox from './SearchBox';
 import {IHistory} from '../interfaces/IHistory';
-import {getFavicon} from '../services/services';
+import {getFaviconFromUrl} from '../services/services';
 
 
 const History = styled.div`
@@ -30,7 +30,7 @@ const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>}> = ({his
                 if (page.url) {
                     userHistoryItems.push({
                         ...page,
-                        favicon: getFavicon(page.url),
+                        favicon: getFaviconFromUrl(page.url),
                     })
                 }
             });

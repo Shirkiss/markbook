@@ -1,10 +1,26 @@
-const getFavicon = (fullUrl) => {
+let getFavicons = require('get-website-favicon');
+
+const getFaviconFromServer = (req, res, next) => {
+    const {url} = req.body;
+    setHeaders(req, res, next);
+    getFavicons(url).then(data => {
+        if (data) {
+            let faviconUrl = data['icons']?.[0]?.['src'];
+            if (!faviconUrl) {
+                faviconUrl = getFaviconFromUrl(url);
+            }
+            res.send(faviconUrl);
+        } else {
+            res.status(500).send('could not get favicon url');
+        }
+    })
+    return next();
+}
+
+const getFaviconFromUrl = (fullUrl) => {
     let favicon = '';
     try {
-        const url = new URL(fullUrl);
-        const baseUrl = `${url.protocol}//${url.hostname}`;
-        const faviconPrefix = '/favicon.ico';
-        favicon = baseUrl + faviconPrefix;
+        favicon = 'https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=' + fullUrl;
     } catch (error) {
         console.log('could not get favicon url');
     }
@@ -18,4 +34,4 @@ const setHeaders = (req, res, next) => {
     return next();
 }
 
-module.exports = {getFavicon, setHeaders}
+module.exports = {getFaviconFromUrl, setHeaders, getFaviconFromServer}

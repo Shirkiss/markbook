@@ -7,6 +7,8 @@ router.post('/saveLink/:userId', [services.setHeaders, linksController.saveLink]
 
 router.post('/saveLinks/:userId', [services.setHeaders, linksController.saveLinks]);
 
+router.post('/addFaviconAndSaveLinks/:userId', [services.setHeaders, linksController.addFaviconAndSaveLinks]);
+
 router.post('/editLink/:userId/:linkId', [services.setHeaders, linksController.editLink]);
 
 router.use('/removeLink/:userId/:linkId', [services.setHeaders, linksController.deleteLink]);

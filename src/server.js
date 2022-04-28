@@ -3,6 +3,7 @@ const linksManager = require('./routes/links');
 const userManager = require('./routes/user');
 const path = require('path');
 const redisManager = require('./services/redisManager');
+const services = require('./services/services');
 
 const app = express();
 redisManager.start();
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use('/links', linksManager);
 app.use('/user', userManager);
+app.use('/getFavicon', [services.getFaviconFromServer]);
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname + '/build/index.html'));

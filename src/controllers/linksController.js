@@ -1,5 +1,7 @@
 const elasticsearchManager = require('../services/elasticsearchManager');
 const ELASTICSEARCH_LINKS_INDEX = 'links';
+const getFavicons = require('get-website-favicon');
+const {getFaviconFromUrl} = require('../services/services');
 
 async function saveLink(req, res, next) {
     try {
@@ -29,6 +31,30 @@ async function saveLinks(req, res, next) {
         res.send(links);
     } catch (error) {
         res.status(500).send({message: 'Failed to save links', error});
+    }
+    next();
+}
+
+async function addFaviconAndSaveLinks(req, res, next) {
+    try {
+        const {userId} = req.params;
+        const linksArray = JSON.parse(req.body['linksArray']);
+        for (let i = 0; i < linksArray.length; ++i) {
+            let data = linksArray[i];
+            data.userId = userId;
+            await getFavicons(data.urlValue).then(favData => {
+                let faviconUrl = favData['icons']?.[0]?.['src'];
+                if (!faviconUrl) {
+                    faviconUrl = getFaviconFromUrl(data.urlValue);
+                }
+                data.favIconUrl = faviconUrl;
+            });
+            await elasticsearchManager.addDocument(data, ELASTICSEARCH_LINKS_INDEX);
+        }
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
+        res.send(links);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to add favicon and save links', error});
     }
     next();
 }
@@ -106,5 +132,5 @@ async function getLink(req, res, next) {
 }
 
 module.exports = {
-    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks
+    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks, addFaviconAndSaveLinks
 }

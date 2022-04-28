@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import Sidebar from './components/Sidebar';
 import SearchBox from './components/SearchBox';
 import HistoryTab from './components/HistoryTab';
-import {getFavicon} from './services/services';
+import {getFaviconFromUrl} from './services/services';
 import * as FaIcons from 'react-icons/ai'
 import {IHistory} from './interfaces/IHistory';
 import './App.css';
@@ -183,7 +183,7 @@ export const App = () => {
                 if (page.url) {
                     userHistoryItems.push({
                         ...page,
-                        favicon: getFavicon(page.url),
+                        favicon: getFaviconFromUrl(page.url),
                     })
                 }
             });
