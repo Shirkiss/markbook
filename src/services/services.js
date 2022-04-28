@@ -20,7 +20,7 @@ const getFaviconFromServer = (req, res, next) => {
 const getFaviconFromUrl = (fullUrl) => {
     let favicon = '';
     try {
-        favicon = 'https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=' + fullUrl;
+        favicon = 'https://t3.gstatic.com/faviconV2?client=SOCIAL&size=64&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=' + fullUrl;
     } catch (error) {
         console.log('could not get favicon url');
     }

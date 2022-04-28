@@ -25,6 +25,13 @@ function import_bookmarks() {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: new URLSearchParams({linksArray})
+                    }).then(() => {
+                        // Update status to let user know when process is over.
+                        let status = document.getElementById('status');
+                        status.textContent = 'Bookmarks imported successfully';
+                        setTimeout(function () {
+                            status.textContent = '';
+                        }, 750);
                     });
                 };
                 fetchData();
