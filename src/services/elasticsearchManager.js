@@ -84,7 +84,17 @@ async function addDocument(data, index) {
     data['timestamp'] = new Date();
     await client.index({
         index,
-        document: data
+        document: data,
+    })
+    await client.indices.refresh({index})
+}
+
+async function addDocumentWithId(id, data, index) {
+    data['timestamp'] = new Date();
+    await client.index({
+        index,
+        id,
+        document: data,
     })
     await client.indices.refresh({index})
 }
@@ -254,5 +264,6 @@ module.exports = {
     mostFrequentKeywordForUserByPrefix,
     mostFrequentKeywordByPrefix,
     mostFrequentKeyword,
-    mostFrequentKeywordForUser
+    mostFrequentKeywordForUser,
+    addDocumentWithId
 };

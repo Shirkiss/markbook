@@ -9,7 +9,7 @@ async function saveLink(req, res, next) {
         const data = req.body;
         data['keywords'] = data.keywords.split(',');
         data.userId = userId;
-        await elasticsearchManager.addDocument(data, ELASTICSEARCH_LINKS_INDEX);
+        await elasticsearchManager.addDocumentWithId(data.urlValue, data, ELASTICSEARCH_LINKS_INDEX);
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
@@ -25,7 +25,7 @@ async function saveLinks(req, res, next) {
         for (let i = 0; i < linksArray.length; ++i) {
             let data = linksArray[i];
             data.userId = userId;
-            await elasticsearchManager.addDocument(data, ELASTICSEARCH_LINKS_INDEX);
+            await elasticsearchManager.addDocumentWithId(data.urlValue, data, ELASTICSEARCH_LINKS_INDEX);
         }
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
@@ -49,7 +49,7 @@ async function addFaviconAndSaveLinks(req, res, next) {
                 }
                 data.favIconUrl = faviconUrl;
             });
-            await elasticsearchManager.addDocument(data, ELASTICSEARCH_LINKS_INDEX);
+            await elasticsearchManager.addDocumentWithId(data.urlValue, data, ELASTICSEARCH_LINKS_INDEX);
         }
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
