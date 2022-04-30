@@ -1,12 +1,22 @@
 const {Client} = require('@elastic/elasticsearch');
 
 const client = new Client({
-    cloud: {
-        id: 'markbook:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDNhY2VkZjkyYjkyOTQ0Yzg4NGMzZDI3NDUzZWMwNGJiJGM1MTM0NjU2ZDk4ODQyYjY4MmU0OGZjMjRmNjIzYzc0'
-    },
+    node: 'https://localhost:9201',
     auth: {
-        apiKey: 'M3FvUTRIOEJCZ1RXNFR5UUlmOXE6Vlk4R25EME5UWHVVSWwxXzBCOEpFUQ==',
+        username: 'elastic',
+        password: '7ZBKnYBd104VDK3t1rO-'
     },
+    tls: { rejectUnauthorized: false }
+    // auth: {
+    //     apiKey: 'YVVUcGU0QUJ5dkhCczh3aUVRdFY6UkZGQzVycEdRZmE5cG5Fd0pGWFdmQQ==',
+    // },
+
+    // cloud: {
+    //     id: 'markbook:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDNhY2VkZjkyYjkyOTQ0Yzg4NGMzZDI3NDUzZWMwNGJiJGM1MTM0NjU2ZDk4ODQyYjY4MmU0OGZjMjRmNjIzYzc0'
+    // },
+    // auth: {
+    //     apiKey: 'M3FvUTRIOEJCZ1RXNFR5UUlmOXE6Vlk4R25EME5UWHVVSWwxXzBCOEpFUQ==',
+    // },
 });
 
 async function getAll(userId, index) {

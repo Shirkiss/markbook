@@ -9,9 +9,9 @@ router.post('/saveLinks/:userId', [services.setHeaders, linksController.saveLink
 
 router.post('/addFaviconAndSaveLinks/:userId', [services.setHeaders, linksController.addFaviconAndSaveLinks]);
 
-router.post('/editLink/:userId/:linkId', [services.setHeaders, linksController.editLink]);
+router.post('/editLink/:userId', [services.setHeaders, linksController.editLink]);
 
-router.use('/removeLink/:userId/:linkId', [services.setHeaders, linksController.deleteLink]);
+router.use('/removeLink/:userId', [services.setHeaders, linksController.deleteLink]);
 
 router.use('/removeAllLinks/:userId', [services.setHeaders, linksController.deleteAllLinks]);
 

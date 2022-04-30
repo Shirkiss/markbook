@@ -126,7 +126,7 @@ export const App = () => {
                     favIconUrl,
                 });
 
-                let saveFunction = isInEditMode ? `editLink/${userId}/${linkId}` : `saveLink/${userId}`;
+                let saveFunction = isInEditMode ? `editLink/${userId}` : `saveLink/${userId}`;
                 await fetch(`http://localhost:8000/links/${saveFunction}`, {
 
                     method: 'POST',
@@ -154,14 +154,15 @@ export const App = () => {
     const removeLink = (linkId: string) => {
         chrome.storage.sync.get('userId', ({userId}) => {
             const fetchData = async () => {
-                //let data = new URLSearchParams({id});
-                const response: any = await fetch(`http://localhost:8000/links/removeLink/${userId}/${linkId}`, {
+                await fetch(`http://localhost:8000/links/removeLink/${userId}`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    //body: data,
+                    body: new URLSearchParams({
+                        linkId
+                    })
                 }).then((response) => {
                     response.json().then(data => {
                         // do something with your data

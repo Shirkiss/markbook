@@ -61,11 +61,11 @@ async function addFaviconAndSaveLinks(req, res, next) {
 
 async function editLink(req, res, next) {
     try {
-        const {userId, linkId} = req.params;
+        const {userId} = req.params;
         const data = req.body;
         data['keywords'] = data.keywords.split(',');
         data.userId = userId;
-        await elasticsearchManager.editDocument(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+        await elasticsearchManager.editDocument(data.urlValue, data, ELASTICSEARCH_LINKS_INDEX);
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
@@ -76,7 +76,8 @@ async function editLink(req, res, next) {
 
 async function deleteLink(req, res, next) {
     try {
-        const {userId, linkId} = req.params;
+        const {userId} = req.params;
+        const {linkId} = req.body;
         await elasticsearchManager.deleteById(linkId, ELASTICSEARCH_LINKS_INDEX)
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
