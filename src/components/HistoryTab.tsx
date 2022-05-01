@@ -20,11 +20,11 @@ const History = styled.div`
      padding-left: 10px;
 `
 
-const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>}> = ({historyList}) => {
+const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>, onEditHistory:Function}> = ({historyList, onEditHistory}) => {
     const [historyListDisplay, setHistoryListDisplay] = useState<Array<IHistory>>(historyList);
 
      const searchHistory = (value:string) => {
-        chrome.history.search({text: value, maxResults: 20}, function (data) {
+        chrome.history.search({text: value, maxResults: 50}, function (data) {
             const userHistoryItems: Array<IHistory> = [];
             data.forEach(function (page) {
                 if (page.url) {
@@ -34,7 +34,6 @@ const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>}> = ({his
                     })
                 }
             });
-            console.log("MAII in searchHistory", value, "-", userHistoryItems)
             setHistoryListDisplay(userHistoryItems);
         });
     };
@@ -44,24 +43,19 @@ const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>}> = ({his
                 <SearchBox onSearchChange={searchHistory}/>
            </div>
            <table className="list_table">
-                   {historyListDisplay.map(({
-                           id,
-                          favicon,
-                          url,
-                          title,
-                          lastVisitTime,
-                          typedCount,
-                          visitCount,
-                         }) => (
-                       <tr className="list_row" key={id}>
+                   {historyListDisplay.map(item => (
+                       <tr className="list_row" key={item.id}>
                            <td className="list_name">
-                               {favicon !== '' ? <img src={favicon} className="list_favicon"/> :
+                               {item.favicon !== '' ? <img src={item.favicon} className="list_favicon"/> :
                                    <FaIcons.AiFillAlert size={30}/>}
                                <div className="list_name_title">
-                                   <a href={url}>{title}</a>
-                                   {lastVisitTime && <span>last visited at: {new Date(lastVisitTime).toDateString()}</span>}
+                                   <a href={item.url}>{item.title}</a>
+                                   {item.lastVisitTime && <span>last visited at: {new Date(item.lastVisitTime).toDateString()}</span>}
                                </div>
                            </td>
+                            <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}
+                                                                                     onClick={() => onEditHistory(item)}/>
+                            </td>
                        </tr>
                    ))}
                </table>

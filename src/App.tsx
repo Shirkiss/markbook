@@ -66,6 +66,19 @@ export const App = () => {
         setKeywords(curr?.keywords || '');
     }
 
+    function setHistoryEditMode(editItem: IHistory) {
+        setIsInEditMode(true);
+        setCurrentTab(TAB_INFO);
+        console.log("MAII the edit item from history: ", editItem)
+        setLinkId(editItem.id);
+        setCaption('');
+        setIsPrivate(false); // from options
+        setFavIconUrl(editItem?.favicon || '');
+        setUrl(editItem?.url || '');
+        setName(editItem?.title || '')
+        setKeywords('');
+    }
+
     function setCurrentUserId() {
         return new Promise<string>((resolve, reject) => {
             //here our function should be implemented
@@ -137,8 +150,7 @@ export const App = () => {
                     body: data,
                 }).then((response) => {
                     response.json().then(data => {
-                        // do something with your data
-                        console.log("MAi the data is:", data);
+                        console.log("With New :", data);
                         updateLinkList(data);
                     });
                 });
@@ -178,7 +190,7 @@ export const App = () => {
 
 
     const getHistory = () => {
-        chrome.history.search({text: '', maxResults: 20}, function (data) {
+        chrome.history.search({text: '', maxResults: 50}, function (data) {
             const userHistoryItems: Array<IHistory> = [];
             data.forEach(function (page) {
                 if (page.url) {
@@ -267,11 +279,12 @@ export const App = () => {
                     <button className="tab_button" onClick={saveLink}>Save</button>
                 </div>
             </div>}
-            {currentTab === HISTORY && <HistoryTab historyList={historyList} />}
+            {currentTab === HISTORY && <HistoryTab historyList={historyList} onEditHistory={setHistoryEditMode}/>}
             {currentTab === LIST && <div id="user-links-page">
                 <SearchBox onSearchChange={searchForPrefix}/>
                 <table className="list_table">
                     {tagList.map(({
+                                    urlValue,
                                       id,
                                       name,
                                       description,
@@ -284,7 +297,7 @@ export const App = () => {
                                 {favIconUrl !== '' ? <img src={favIconUrl} className="list_favicon"/> :
                                     <FaIcons.AiFillAlert size={30}/>}
                                 <div className="list_name_title">
-                                    <span>{name}</span>
+                                    <a href={urlValue}>{name}</a>
                                     <span>{description}</span>
                                 </div>
                             </td>
