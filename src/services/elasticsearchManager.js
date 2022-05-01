@@ -1,10 +1,11 @@
 const {Client} = require('@elastic/elasticsearch');
 
 const client = new Client({
-    node: 'https://localhost:9201',
+    node: 'https://localhost:9200', // SHIR -9201
     auth: {
         username: 'elastic',
-        password: '7ZBKnYBd104VDK3t1rO-'
+        password: 'MGnarGnZDlXAo*BYfCK7' // MAI's
+        //password: '7ZBKnYBd104VDK3t1rO-' //SHIR's
     },
     tls: { rejectUnauthorized: false }
     // auth: {
