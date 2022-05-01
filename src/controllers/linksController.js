@@ -78,6 +78,20 @@ async function editLink(req, res, next) {
     next();
 }
 
+async function linkClicked(req, res, next) {
+    try {
+        const {userId} = req.params;
+        const {urlValue} = req.body;
+        const linkId = `${userId}:${urlValue}`;
+        await elasticsearchManager.increaseCounter(linkId, ELASTICSEARCH_LINKS_INDEX);
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
+        res.send(links);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to edit link', error});
+    }
+    next();
+}
+
 async function deleteLink(req, res, next) {
     try {
         const {userId} = req.params;
@@ -137,5 +151,5 @@ async function getLink(req, res, next) {
 }
 
 module.exports = {
-    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks, addFaviconAndSaveLinks
+    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks, addFaviconAndSaveLinks, linkClicked
 }

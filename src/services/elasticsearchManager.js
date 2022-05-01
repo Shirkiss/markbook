@@ -90,6 +90,17 @@ async function editDocument(id, data, index) {
     await client.indices.refresh({index})
 }
 
+async function increaseCounter(id, index) {
+    await client.update({
+        index,
+        id,
+        script: {
+            source: "ctx._source.counter += 1",
+        }
+    })
+    await client.indices.refresh({index})
+}
+
 async function addDocument(data, index) {
     data['timestamp'] = new Date();
     await client.index({
@@ -275,5 +286,6 @@ module.exports = {
     mostFrequentKeywordByPrefix,
     mostFrequentKeyword,
     mostFrequentKeywordForUser,
-    addDocumentWithId
+    addDocumentWithId,
+    increaseCounter
 };
