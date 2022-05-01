@@ -11,7 +11,7 @@ router.post('/addFaviconAndSaveLinks/:userId', [services.setHeaders, linksContro
 
 router.post('/editLink/:userId', [services.setHeaders, linksController.editLink]);
 
-router.post('/clickLink/:userId', [services.setHeaders, linksController.linkClicked]);
+router.post('/linkClicked/:userId', [services.setHeaders, linksController.linkClicked]);
 
 router.use('/removeLink/:userId', [services.setHeaders, linksController.deleteLink]);
 

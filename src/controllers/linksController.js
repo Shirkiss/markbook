@@ -3,14 +3,19 @@ const ELASTICSEARCH_LINKS_INDEX = 'links';
 const getFavicons = require('get-website-favicon');
 const {getFaviconFromUrl} = require('../services/services');
 
+async function prepareDataAndAddLink(userId, data) {
+    data['keywords'] = data.keywords?.split(',');
+    data.userId = userId;
+    data.counter = 0;
+    const linkId = `${userId}:${data.urlValue}`;
+    await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+}
+
 async function saveLink(req, res, next) {
     try {
         const {userId} = req.params;
         const data = req.body;
-        data['keywords'] = data.keywords.split(',');
-        data.userId = userId;
-        const linkId = `${userId}:${data.urlValue}`;
-        await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+        await prepareDataAndAddLink(userId, data);
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
@@ -25,9 +30,7 @@ async function saveLinks(req, res, next) {
         const linksArray = JSON.parse(req.body['linksArray']);
         for (let i = 0; i < linksArray.length; ++i) {
             let data = linksArray[i];
-            data.userId = userId;
-            const linkId = `${userId}:${data.urlValue}`;
-            await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+            await prepareDataAndAddLink(userId, data);
         }
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
@@ -37,22 +40,24 @@ async function saveLinks(req, res, next) {
     next();
 }
 
+async function getFavicon(data) {
+    await getFavicons(data.urlValue).then(favData => {
+        let faviconUrl = favData['icons']?.[0]?.['src'];
+        if (!faviconUrl) {
+            faviconUrl = getFaviconFromUrl(data.urlValue);
+        }
+        data.favIconUrl = faviconUrl;
+    });
+}
+
 async function addFaviconAndSaveLinks(req, res, next) {
     try {
         const {userId} = req.params;
         const linksArray = JSON.parse(req.body['linksArray']);
         for (let i = 0; i < linksArray.length; ++i) {
             let data = linksArray[i];
-            data.userId = userId;
-            await getFavicons(data.urlValue).then(favData => {
-                let faviconUrl = favData['icons']?.[0]?.['src'];
-                if (!faviconUrl) {
-                    faviconUrl = getFaviconFromUrl(data.urlValue);
-                }
-                data.favIconUrl = faviconUrl;
-            });
-            const linkId = `${userId}:${data.urlValue}`;
-            await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+            await getFavicon(data);
+            await prepareDataAndAddLink(userId, data);
         }
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
@@ -66,10 +71,7 @@ async function editLink(req, res, next) {
     try {
         const {userId} = req.params;
         const data = req.body;
-        data['keywords'] = data.keywords.split(',');
-        data.userId = userId;
-        const linkId = `${userId}:${data.urlValue}`;
-        await elasticsearchManager.editDocument(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+        await prepareDataAndAddLink(userId, data);
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
