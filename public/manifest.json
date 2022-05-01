@@ -7,6 +7,9 @@
     "default_popup": "index.html",
     "default_title": "Markbook"
   },
+  "chrome_url_overrides": {
+    "newtab": "./index.html"
+  },
   "options_page": "options.html",
   "background": {
     "service_worker": "background.js"
