@@ -133,7 +133,8 @@ async function deleteAllLinks(req, res, next) {
 async function getAllLinks(req, res, next) {
     try {
         const {userId} = req.params;
-        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
+        const {from} = req.body;
+        const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX, from);
         res.send(links);
     } catch (error) {
         res.status(500).send({message: 'Failed to get all links', error});

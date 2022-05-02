@@ -1,13 +1,13 @@
 const {Client} = require('@elastic/elasticsearch');
 
 const client = new Client({
-    node: 'https://localhost:9200', // SHIR -9201
+    node: 'https://localhost:9201', // SHIR -9201
     auth: {
         username: 'elastic',
-        password: 'MGnarGnZDlXAo*BYfCK7' // MAI's
-        //password: '7ZBKnYBd104VDK3t1rO-' //SHIR's
+        // password: 'MGnarGnZDlXAo*BYfCK7' // MAI's
+        password: '7ZBKnYBd104VDK3t1rO-' //SHIR's
     },
-    tls: { rejectUnauthorized: false }
+    tls: {rejectUnauthorized: false}
     // auth: {
     //     apiKey: 'YVVUcGU0QUJ5dkhCczh3aUVRdFY6UkZGQzVycEdRZmE5cG5Fd0pGWFdmQQ==',
     // },
@@ -20,9 +20,11 @@ const client = new Client({
     // },
 });
 
-async function getAll(userId, index) {
+async function getAll(userId, index, from = 0, size = 20) {
     const result = await client.search({
             index: index,
+            from,
+            size,
             body: {
                 query: {
                     "bool": {
