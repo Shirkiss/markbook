@@ -1,5 +1,18 @@
 let getFavicons = require('get-website-favicon');
 
+function omnibarDataFormatter(data) {
+    const result = [];
+    for (let i = 0; i < data.length; ++i) {
+        let content = {
+            content: `${data[i]['_source']['name']}, url: ${data[i]['_source']['urlValue']}`,
+            deletable: false,
+            description: `${data[i]['_source']['name']} | ${data[i]['_source']['urlValue']}`
+        };
+        result.push(content);
+    }
+    return result;
+}
+
 const getFaviconFromServer = (req, res, next) => {
     const {url} = req.body;
     setHeaders(req, res, next);
@@ -34,4 +47,4 @@ const setHeaders = (req, res, next) => {
     return next();
 }
 
-module.exports = {getFaviconFromUrl, setHeaders, getFaviconFromServer}
+module.exports = {getFaviconFromUrl, setHeaders, getFaviconFromServer, omnibarDataFormatter}

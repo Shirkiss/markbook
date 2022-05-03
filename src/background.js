@@ -1,3 +1,7 @@
+const {omnibarDataFormatter} = require('./services/services');
+const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
+const URL_PREFIX = 'url: '
+
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.sync.set({links: {}});
     chrome.identity.getProfileUserInfo(async function (userInfo) {
@@ -7,7 +11,7 @@ chrome.runtime.onInstalled.addListener(() => {
             name, email
         });
         await chrome.storage.sync.set({userId: userInfo.id, email, name});
-        const response = await fetch(`http://localhost:8000/user/addUserInfo/${userInfo.id}`, {
+        await fetch(`http://localhost:8000/user/addUserInfo/${userInfo.id}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -16,4 +20,43 @@ chrome.runtime.onInstalled.addListener(() => {
             body: data
         });
     });
+});
+
+chrome.omnibox.setDefaultSuggestion({
+    description: 'Select from your <match>Markbooks</match> or search on <match>Google</match>'
+});
+
+chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+    chrome.storage.sync.get('userId', ({userId}) => {
+        let data = new URLSearchParams({prefix: text});
+        fetch(`http://localhost:8000/links/searchAll/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (!data.length) {
+                    //no markbooks were found
+                    suggest([]);
+                } else {
+                    const result = omnibarDataFormatter(data);
+                    suggest(result);
+                }
+            })
+    });
+});
+
+chrome.omnibox.onInputEntered.addListener((text) => {
+    const prefixIndex = text.indexOf(URL_PREFIX);
+    let url = '';
+    if (prefixIndex !== -1) {
+        url = text.substring(prefixIndex + URL_PREFIX.length)
+    } else {
+        url = GOOGLE_SEARCH_URL + text;
+    }
+    chrome.tabs.create({url});
 });

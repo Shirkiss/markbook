@@ -17,8 +17,8 @@ const getKeywordsSuggestion = async (userId, prefix, index) => {
     }
 
     return keywords;
-
 }
+
 const getGeneralKeywordsSuggestion = async (userId, prefix, limit, index) => {
     let keywords = [];
     const userCommonKeywords = await elasticSearch.mostFrequentKeywordForUserByPrefix(userId, prefix, limit, index);
