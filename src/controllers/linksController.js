@@ -4,7 +4,8 @@ const getFavicons = require('get-website-favicon');
 const {getFaviconFromUrl} = require('../services/services');
 
 async function prepareDataAndAddLink(userId, data) {
-    data['keywords'] = data.keywords?.split(',');
+    data.keywords = data.keywords?.split(',');
+    data.groups = data.groups?.split(',');
     data.userId = userId;
     data.counter = 0;
     const linkId = `${userId}:${data.urlValue}`;

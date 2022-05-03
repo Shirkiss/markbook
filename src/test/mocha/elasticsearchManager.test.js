@@ -13,6 +13,7 @@ describe('Elasticsearch tests', function() {
             await elasticSearch.addDocument({name: 'Roys website', urlValue: 'www.check.com/id=lio', keywords: ['shir'], caption: 'my third link', userId: 1}, TEST_INDEX);
             await elasticSearch.addDocument({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['shir', 'sh', 'ketrecipe', 'recket'], caption: 'my fourth link', userId: 2}, TEST_INDEX);
             await elasticSearch.addDocument({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['recipe'], caption: 'my fourth link', userId: 2}, TEST_INDEX);
+            await elasticSearch.addDocument({name: 'lio website', urlValue: 'www.check.com/id=no', keywords: ['group'], groups:['group1', 'group2'], caption: 'my fourth link', userId: 3}, TEST_INDEX);
         } catch {
             await elasticSearch.deleteIndex(TEST_INDEX);
         }
@@ -37,6 +38,11 @@ describe('Elasticsearch tests', function() {
         expect(result.length).to.equal(3);
     })
 
+    it('should store groups', async () => {
+        const result = await elasticSearch.getAll( 3, TEST_INDEX);
+        expect(result[0]['_source'].groups.length).to.equal(2);
+    })
+
     it('mostFrequentKeywordForUserByPrefix should return correct data', async () => {
         const result = await elasticSearch.mostFrequentKeywordForUserByPrefix(2, 'rec', 4, TEST_INDEX);
         expect(result.length).to.equal(2);
@@ -55,7 +61,6 @@ describe('Elasticsearch tests', function() {
         const result2 = await elasticSearch.mostFrequentKeywordByPrefix( 'reci', 4, TEST_INDEX);
         expect(result2.length).to.equal(1);
         expect(result2[0]['doc_count']).to.equal(3);
-
     })
 
     it('mostFrequentKeyword should return correct data', async () => {
