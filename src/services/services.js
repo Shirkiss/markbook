@@ -40,6 +40,18 @@ const getFaviconFromUrl = (fullUrl) => {
     return favicon;
 }
 
+const getWordsWithPrefixFromText = (text, prefix) => {
+
+    const regex = new RegExp('\\' + prefix + '\\S+', 'g');
+    const matches = [];
+    let match;
+
+    while (match = regex.exec(text)) {
+        matches.push(match[0]);
+    }
+    return matches;
+}
+
 const setHeaders = (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -47,4 +59,5 @@ const setHeaders = (req, res, next) => {
     return next();
 }
 
-module.exports = {getFaviconFromUrl, setHeaders, getFaviconFromServer, omnibarDataFormatter}
+
+module.exports = {getFaviconFromUrl, setHeaders, getFaviconFromServer, omnibarDataFormatter, getWordsWithPrefixFromText}
