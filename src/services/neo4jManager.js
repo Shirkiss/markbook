@@ -375,6 +375,29 @@ class Neo4jManager {
         }
     }
 
+    async getGroupMembers(groupName) {
+        const session = await this.newSession();
+        try {
+            const writeQuery = `MATCH (users:User)-[:IS_MEMBER_IN]-(group:Group {name: $groupName})
+                                RETURN users`
+
+            const writeResult = await session.writeTransaction(tx =>
+                tx.run(writeQuery, {groupName})
+            )
+
+            writeResult.records.forEach(record => {
+                const user = record.get('users')
+                console.log(
+                    `${user.properties.id} is member in ${groupName}`
+                )
+            })
+        } catch (error) {
+            console.error('Something went wrong: ', error)
+        } finally {
+            await session.close()
+        }
+    }
+
     async getUserGroups(userId) {
         const session = await this.newSession();
         try {
