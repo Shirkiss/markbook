@@ -53,7 +53,7 @@ const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>, onEditHi
                                    {item.lastVisitTime && <span>last visited at: {new Date(item.lastVisitTime).toDateString()}</span>}
                                </div>
                            </td>
-                            <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}
+                            <td className="list_second_icon"><FaIcons.AiTwotonePushpin size={20}
                                                                                      onClick={() => onEditHistory(item)}/>
                             </td>
                        </tr>
