@@ -47,7 +47,8 @@ const getWordsWithPrefixFromText = (text, prefix) => {
     let match;
 
     while (match = regex.exec(text)) {
-        matches.push(match[0]);
+        // TODO: remove #/@
+        matches.push(match[0].substring(1));
     }
     return matches;
 }

@@ -11,6 +11,6 @@ describe('services tests', () => {
 
     it('Should return all keywords', () => {
         const text = '#keywords #keywords2 something something @group word prefixfds @groupwith#inside #keywordwith@inside';
-        expect(getWordsWithPrefixFromText(text, '#')).to.deep.equal(['#keywords', '#keywords2', '#inside', '#keywordwith@inside']);
+        expect(getWordsWithPrefixFromText(text, '#')).to.deep.equal(['keywords', 'keywords2', 'inside', 'keywordwith@inside']);
     });
 });

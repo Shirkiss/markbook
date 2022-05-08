@@ -52,6 +52,8 @@ const getInitialKeywordsSuggestion = async (userId, index) => {
 const getKeysFromResponse = (response) => {
     return response.map(link => link.key);
 }
-
+// - getInitialKeywordsSuggestion - first time no keyword sign
+// - getKeywordsSuggestion -
+// - #
 module.exports = {getInitialKeywordsSuggestion, getKeywordsSuggestion, getGeneralKeywordsSuggestion}
 

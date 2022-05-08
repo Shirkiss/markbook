@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
+import Autocomplete from 'react-autocomplete';
+import ReactTextareaAutocomplete , {ItemComponentProps} from '@webscopeio/react-textarea-autocomplete';
 import Sidebar from './components/Sidebar';
 import SearchBox from './components/SearchBox';
 import HistoryTab from './components/HistoryTab';
-import {getFaviconFromUrl} from './services/services';
+import {getFaviconFromUrl, getWordsWithPrefixFromText} from './services/services';
 import * as FaIcons from 'react-icons/ai'
 import {IHistory} from './interfaces/IHistory';
 import './App.css';
@@ -12,13 +14,14 @@ export interface Link {
     id: string;
     urlValue: string;
     name: string;
-    description: string;
     caption: string;
-    keywords: string;
+    keywords: Array<string>;
     favIconUrl: string;
     isPrivate: boolean;
 }
 export interface IElasticObject { _id: string; _source: any }
+export interface ITag { name: string }
+type Entity = { name: string , char: string}
 
 
 export const App = () => {
@@ -35,16 +38,20 @@ export const App = () => {
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
     const [historyList, setHistoryList] = useState<Array<IHistory>>([]);
+    const [captionAutocompleteValue, setCaptionAutocompleteValue] = useState<string>('');
+    const [captionAutocompleteTags, setCaptionAutocompleteTags] = useState<Array<string>>([]);
 
     /**
      * Get current URL
      */
     useEffect(() => {
         async function resetAppData() {
-            const currId = await setCurrentUserId();
-            console.log(userId);
-            await getAllLinks(currId);
+            const currUserId = await setCurrentUserId();
+            await getAllTags(currUserId);
+            await getAllLinks(currUserId);
             getHistory();
+
+
         }
 
         if (urlValue == '') {
@@ -63,20 +70,18 @@ export const App = () => {
         setFavIconUrl(curr?.favIconUrl || '');
         setUrl(curr?.urlValue || '');
         setName(curr?.name || '')
-        setKeywords(curr?.keywords || '');
+        setCaption(curr?.caption || '');
     }
 
     function setHistoryEditMode(editItem: IHistory) {
         setIsInEditMode(true);
         setCurrentTab(TAB_INFO);
-        console.log("MAII the edit item from history: ", editItem)
         setLinkId(editItem.id);
         setCaption('');
         setIsPrivate(false); // from options
         setFavIconUrl(editItem?.favicon || '');
         setUrl(editItem?.url || '');
         setName(editItem?.title || '')
-        setKeywords('');
     }
 
     function setCurrentUserId() {
@@ -97,9 +102,8 @@ export const App = () => {
             let currentLink: Link = {
                     urlValue: obj.urlValue,
                     name: obj.name,
-                    caption: obj.caption,
                     id: item._id,
-                    description: "My description",
+                    caption: obj.caption,
                     keywords: obj.keywordsSplit,
                     favIconUrl: obj.favIconUrl,
                     isPrivate: obj.isPrivate,
@@ -124,15 +128,36 @@ export const App = () => {
         updateLinkList(result);
     }
 
+    async function getAllTags(userId: string) {
+        const response = await fetch(`http://localhost:8000/keywords/initialKeywordsSuggestion/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+        });
+        const result = await response.json();
+
+//         const res = result.map((item: string) => {
+//             console.log("Curr item" , item);
+//             return {name: item};
+//         });
+        //console.log("Keywords : ", res);
+        setCaptionAutocompleteTags(result);
+    }
+
+
     /**
      * Save link
      */
     const saveLink = () => {
         chrome.storage.sync.get('userId', ({userId}) => {
             const fetchData = async () => {
+                const keywordsSave = getWordsWithPrefixFromText(caption, '#').join();
+                console.log("The keywords are");
                 let data = new URLSearchParams({
                     name,
-                    keywords,
+                    keywords: keywordsSave,
                     caption,
                     urlValue,
                     isPrivate: isPrivate.toString(),
@@ -250,6 +275,15 @@ export const App = () => {
             updateLinkList(result);
         }
     }
+    //const Item = ( item: string ) => <div>{item}</div>;
+    /* tslint:disable-next-line */
+    
+    //const Item: React.FunctionComponent<{tag: string}> = ( {tag: string} ) => <div>{tag}</div>;
+    //const Item = ({ name, char }: IShir): JSX.Element => <div>{name}</div>;
+    //const Item = ({ entity: { name, char } : {entity: { name: string, char:string }} }) => <div>{`${name}: ${char}`}</div>;
+    //const Item = ({entity}: { entity: Entity } ) => <div>{`${entity.name}: ${entity.char}`}</div>;
+    /* tslint:disable-next-line */
+    const Item = ( props: ItemComponentProps<any> ) => <div>{`${props.entity}: value`}</div>;
 
     return (
         <div className="App">
@@ -265,8 +299,22 @@ export const App = () => {
                            onChange={e => setName(e.target.value)}/>
                 </div>
                 <div className="tab_data">
-                    <textarea id="caption" className="tab_area" placeholder="Caption" name="caption" rows={4} cols={50}
-                              onChange={e => setCaption(e.target.value)}/>
+                    <textarea id="caption" className="tab_area" placeholder="Caption" name="caption" value={caption}
+                            rows={4} cols={50} onChange={e => setCaption(e.target.value)}/>
+                    <ReactTextareaAutocomplete
+                       className="my-textarea"
+                       loadingComponent={() => <span>Loading</span>}
+                       minChar={0}
+                       trigger={{
+                         "@": {
+                           dataProvider: (token) => {
+                            return captionAutocompleteTags;
+                           },
+                           component: Item,
+                           output: (item: any, trigger) => item
+                         }
+                       }}
+                     />
                 </div>
 
                 <div className="tab_footer">
@@ -287,7 +335,6 @@ export const App = () => {
                                     urlValue,
                                       id,
                                       name,
-                                      description,
                                       caption,
                                       keywords,
                                       favIconUrl
@@ -298,7 +345,7 @@ export const App = () => {
                                     <FaIcons.AiFillAlert size={30}/>}
                                 <div className="list_name_title">
                                     <a href={urlValue}>{name}</a>
-                                    <span>{description}</span>
+                                    <span>{caption}</span>
                                 </div>
                             </td>
                             <td className="list_second_icon"><FaIcons.AiTwotoneEdit size={20}
