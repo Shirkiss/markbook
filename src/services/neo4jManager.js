@@ -1,5 +1,38 @@
 const neo4j = require('neo4j-driver');
+const queries = require('./neo4j/queries');
+const consts = require('./neo4j/helpers/consts');
 const HEALTH_CHECK_STRING = 'Healthy';
+const QUERY_RESULT_ERROR_PREFIX = 'ERROR:';
+
+
+function deconstructCypherObject(records, i = 0) {
+    const arrayOriginally = Array.isArray(records);
+    let resValue = arrayOriginally ? records : [records];
+    resValue = resValue.map((m) => {
+        const converted = extractNodeProperties(m);
+        if (converted && typeof converted === 'object') {
+            Object.keys(converted).forEach((k) => {
+                converted[k] = deconstructCypherObject(extractNodeProperties(converted[k]), i + 1);
+            });
+        }
+        return converted;
+    });
+    return (resValue.length > 1 || (arrayOriginally && i > 0)) ? resValue : resValue[0];
+}
+
+function extractNodeProperties(obj) {
+    if (typeof obj !== 'object' || !obj || Array.isArray(obj)) {
+        return obj;
+    }
+    if (obj.values) {
+        const recordValues = [...obj.values()];
+        return extractNodeProperties(recordValues.length === 1 ? recordValues[0] : recordValues);
+    }
+    if (obj.properties) {
+        return obj.properties;
+    }
+    return obj;
+}
 
 class Neo4jManager {
 
@@ -15,6 +48,7 @@ class Neo4jManager {
         if (!await this.deepHealth()) {
             throw new Error('Failed to initialize neo4j session instance!');
         }
+        this.loadQueries();
     }
 
     async deepHealth() {
@@ -46,403 +80,96 @@ class Neo4jManager {
         return driver.session(sessionOptions);
     }
 
-    async createUserExample() {
-        const session = await this.newSession();
+    _validateParams(params, required) {
+        // verify all required params were provided
+        required.forEach((propName) => {
+            if (!(propName in params)) throw new Error(`"${propName}" is required but missing in query params`);
+        });
+
+        return params;
+    }
+
+    // Will pass a new driver session as the first parameter to a given function
+    async querySessionWrapper(obj, func, transaction, finalParams, metadata) {
+        const query = obj.constructor.name;
+
+        const querySession = await this.newSession(transaction, metadata);
+
         try {
-            const person1Name = 'Someone'
-            const person2Name = 'David'
-
-            const writeQuery = `MERGE (p1:Person { name: $person1Name })
-                       MERGE (p2:Person { name: $person2Name })
-                       MERGE (p1)-[:KNOWS]->(p2)
-                       RETURN p1, p2`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {person1Name, person2Name})
-            )
-            writeResult.records.forEach(record => {
-                const person1Node = record.get('p1')
-                const person2Node = record.get('p2')
-                console.log(
-                    `Created friendship between: ${person1Node.properties.name}, ${person2Node.properties.name}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
+            const results = await obj[func].bind(obj)(querySession, consts.consts.DEFAULT_TIMEOUT, finalParams, metadata);
+            results.bookmark = querySession.lastBookmark();
+            return results;
+        } catch (e) {
+            if (e instanceof neo4j.Neo4jError) {
+                e.query = query;
+                e.finalParams = finalParams;
+                e.metadata = metadata;
+            }
+            throw (e);
         } finally {
-            await session.close()
+            await querySession.close();
         }
     }
 
-    async createUser(userId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MERGE (user:User {id: $userId})
-                            RETURN user`
 
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                console.log(
-                    `Created a user: ${user.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
+    async performQuery(name, ...args) {
+        const query = queries[name];
+
+        // validate parameters
+        const [params, metadata] = args;
+        const { required, optional, transaction } = query;
+
+        let finalParams = params;
+
+        if (params && required && optional) {
+            // supports also batch operations
+            finalParams = Array.isArray(params) === false
+                ? this._validateParams(params, required, optional)
+                : params.map(item => this._validateParams(item, required, optional));
         }
+
+        // execute the query
+        const res = await this.querySessionWrapper(query, 'perform', transaction, finalParams, metadata);
+
+        // process query results
+        return this.constructor.buildQueryResult(res);
     }
 
-    async deleteUser(userId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})
-                            DELETE user`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                console.log(
-                    `Deleted the user: ${user.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
+    static buildQueryResult(res) {
+        if (!res) {
+            console.log(res);
+            throw new Error('empty query result');
         }
+
+        // if the query returned { value, err } it will not be processed further
+        if ((res.value || res.err) && !res.records) {
+            return {
+                value: res.value,
+                err: res.err ? new Error(res.err) : null,
+                bookmark: res.bookmark,
+            };
+        }
+
+        let resValue = deconstructCypherObject(res.records);
+        resValue = typeof resValue === 'undefined' ? null : resValue;
+
+        let err = null;
+
+        if (typeof resValue === 'string' && resValue.startsWith(QUERY_RESULT_ERROR_PREFIX)) {
+            err = new Error(resValue.slice((QUERY_RESULT_ERROR_PREFIX.length)));
+            resValue = null;
+        }
+
+        return { value: resValue, err, bookmark: res.bookmark };
     }
 
-    async deleteUserHard(userId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})
-                            DETACH DELETE user`
 
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                console.log(
-                    `Deleted the user: ${user.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async deleteGroupHard(groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (group:Group {name: $groupName})
-                            DETACH DELETE group`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {groupName})
-            )
-            writeResult.records.forEach(record => {
-                console.log(
-                    `Deleted the group: ${groupName}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async deleteAllUserFriends(userId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})-[rel:IS_FRIENDS_WITH]->()
-                                DELETE rel`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                console.log(
-                    `Deleted all friends for user: ${user.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async deleteGroup(groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (group:Group {name: $groupName})
-                            DELETE group`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {groupName})
-            )
-            writeResult.records.forEach(record => {
-                const group = record.get('group')
-                console.log(
-                    `Deleted the group: ${group.properties.name}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async deleteFriend(userId, friendId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user {id: $userId})-[rel:IS_FRIENDS_WITH]->(userFriend:User {id: $friendId})
-                                DELETE user, userFriend, rel`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId, friendId})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                const friend = record.get('friend')
-                console.log(
-                    `Deleted the rel between: ${user.properties.id} and ${friend.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async createGroup(groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MERGE (group:Group {name: $groupName, createdDate: date()})
-                            RETURN group`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {groupName})
-            )
-            writeResult.records.forEach(record => {
-                const group = record.get('group')
-                console.log(
-                    `Created a group: ${group.properties.name}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async setGroupCreator(userId, groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})
-                            MATCH (group:Group {name: $groupName})
-                            MERGE (group)-[rel:CREATED_BY]->(user)
-                            RETURN user, group`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {groupName, userId})
-            )
-            writeResult.records.forEach(record => {
-                const group = record.get('group')
-                const user = record.get('user')
-                console.log(
-                    `${group.properties.name} was created by ${user.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async setGroupOwner(userId, groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})
-                            MATCH (group:Group {name: $groupName})
-                            MERGE (user)-[rel:IS_OWNER_OF]->(group)
-                            RETURN user, group`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {groupName, userId})
-            )
-            writeResult.records.forEach(record => {
-                const group = record.get('group')
-                const user = record.get('user')
-                console.log(
-                    `${user.properties.id} is owner of: ${group.properties.name}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async addFriend(userId, friendUserId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})
-                            MATCH (friend:User {id: $friendUserId})
-                            MERGE (user)-[rel:IS_FRIENDS_WITH]->(friend)
-                            SET rel.startDate = date()
-                            RETURN user, friend`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId, friendUserId})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                const friend = record.get('friend')
-                console.log(
-                    `Created friendship between: ${user.properties.id}, ${friend.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async joinGroup(userId, groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (user:User {id: $userId})
-                            MATCH (group:Group {name: $groupName})
-                            MERGE (user)-[rel:IS_MEMBER_IN]->(group)
-                            SET rel.joinDate = date()
-                            RETURN user, group`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId, groupName})
-            )
-            writeResult.records.forEach(record => {
-                const user = record.get('user')
-                const friend = record.get('group')
-                console.log(
-                    `${user.properties.id} has joined the group ${friend.properties.name}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async getFriends(userId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (:User {id: $userId})-[:IS_FRIENDS_WITH]-(userFriends)
-                                RETURN userFriends`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId})
-            )
-
-            writeResult.records.forEach(record => {
-                const userFriend = record.get('userFriends')
-                console.log(
-                    `${userId} is friend with ${userFriend.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async getGroupMembers(groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (users:User)-[:IS_MEMBER_IN]-(group:Group {name: $groupName})
-                                RETURN users`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {groupName})
-            )
-
-            writeResult.records.forEach(record => {
-                const user = record.get('users')
-                console.log(
-                    `${user.properties.id} is member in ${groupName}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async getUserGroups(userId) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (:User {id: $userId})-[:IS_MEMBER_IN]-(userGroups)
-                                RETURN userGroups`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId})
-            )
-
-            writeResult.records.forEach(record => {
-                const userGroup = record.get('userGroups')
-                console.log(
-                    `${userId} is member in ${userGroup.properties.name}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
-    }
-
-    async getFriendsOnGroup(userId, groupName) {
-        const session = await this.newSession();
-        try {
-            const writeQuery = `MATCH (:User {id: $userId})-[:IS_FRIENDS_WITH]-(userFriends)
-                                MATCH (userFriends)-[:IS_MEMBER_IN]->(group:Group {name:$groupName})
-                                RETURN userFriends`
-
-            const writeResult = await session.writeTransaction(tx =>
-                tx.run(writeQuery, {userId, groupName})
-            )
-
-            writeResult.records.forEach(record => {
-                const userFriend = record.get('userFriends')
-                console.log(
-                    `${userId} is friend with ${userFriend.properties.id}`
-                )
-            })
-        } catch (error) {
-            console.error('Something went wrong: ', error)
-        } finally {
-            await session.close()
-        }
+    loadQueries() {
+        Object.keys(queries).forEach((name) => {
+            this[name] = async (...args) => this.performQuery(name, ...args);
+            this[`${name}Builder`] = (traversal, ...args) => ([...traversal, queries[name].generateQuery(...args)]);
+            this[`${name}Executor`] = async (...args) => this.querySessionWrapper(queries[name], 'resultFunc', queries[name].transaction, ...args);
+        });
     }
 
 }

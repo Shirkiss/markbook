@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Autocomplete from 'react-autocomplete';
 import ReactTextareaAutocomplete , {ItemComponentProps} from '@webscopeio/react-textarea-autocomplete';
 import Sidebar from './components/Sidebar';
 import SearchBox from './components/SearchBox';
@@ -138,11 +137,11 @@ export const App = () => {
         });
         const result = await response.json();
 
-//         const res = result.map((item: string) => {
-//             console.log("Curr item" , item);
-//             return {name: item};
-//         });
-        //console.log("Keywords : ", res);
+        // const res = result.map((item: string) => {
+        //     console.log("Curr item" , item);
+        //     return {name: item};
+        // });
+        console.log("Keywords : ", result);
         setCaptionAutocompleteTags(result);
     }
 
