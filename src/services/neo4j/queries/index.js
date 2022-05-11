@@ -19,6 +19,7 @@ const removeUserFriend = require('./remove-user-friend');
 const updateGroup = require('./update-group');
 const deleteAll = require('./delete-all');
 const searchGroup = require('./search-group');
+const getGroupPendingJoinRequests = require('./get-group-pending-join-requests');
 
 module.exports = {
     addUserFriend,
@@ -42,4 +43,5 @@ module.exports = {
     updateGroup,
     deleteAll,
     searchGroup,
+    getGroupPendingJoinRequests
 };

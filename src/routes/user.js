@@ -11,4 +11,6 @@ router.use('/getUserInfo/:userId', [services.setHeaders, userController.getUserI
 
 router.post('/getUserInfoField/:userId', [services.setHeaders, userController.getUserInfoField]);
 
+router.post('/deleteUser/:userId', [services.setHeaders, userController.deleteUser]);
+
 module.exports = router;

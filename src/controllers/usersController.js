@@ -1,11 +1,16 @@
 const redisManager = require('../services/redisManager');
+const neo4jManager = require('../services/neo4jManager');
 
 async function addUserInfo(req, res, next) {
     try {
         const {userId} = req.params;
         const data = req.body;
         await redisManager.addUserInfo(userId, data);
-        res.send('User info saved successfully');
+        const result = await neo4jManager.performQuery('createUser', {
+                userId,
+            }
+        )
+        res.send(result);
     } catch (error) {
         res.status(500).send({message: 'Failed to save user info', error});
     }
@@ -47,10 +52,25 @@ async function getUserInfoField(req, res, next) {
     next();
 }
 
+async function deleteUser(req, res, next) {
+    try {
+        const {userId} = req.params;
+        await redisManager.deleteUserInfo(userId);
+        const result = await neo4jManager.performQuery('deleteUser', {
+                userId,
+            }
+        )
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to get user info', error});
+    }
+    next();
+}
 
 module.exports = {
     addUserInfo,
     getUserInfo,
     addUserInfoField,
-    getUserInfoField
+    getUserInfoField,
+    deleteUser
 }

@@ -43,6 +43,10 @@ const removeAllLinks = async (userId) => {
     await client.DEL(`links:${userId}`);
 };
 
+const deleteUserInfo = async (userId) => {
+    await client.DEL(`users:${userId}`);
+};
+
 
 module.exports = {
     getLink,
@@ -54,5 +58,6 @@ module.exports = {
     addUserInfo,
     getAllUserInfo,
     getUserInfo,
-    addUserInfoField
+    addUserInfoField,
+    deleteUserInfo
 };

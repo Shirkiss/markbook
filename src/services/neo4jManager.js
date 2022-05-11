@@ -145,4 +145,4 @@ class Neo4jManager {
     }
 }
 
-module.exports = Neo4jManager;
+module.exports = new Neo4jManager();
