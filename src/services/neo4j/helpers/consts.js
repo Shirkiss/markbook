@@ -27,7 +27,7 @@ const consts = {
     GROUP_SEARCH_RESULT_PROPERTIES: ['groupName', 'groupBadge', 'membersCount', 'maxMembersCount', 'country'],
     GROUP_JOIN_PROPERTIES: ['groupName', 'groupBadge', 'membersCount', 'maxMembersCount', 'country'],
     DEFAULT_JOIN_REQUEST_EXPIRATION_TIME: 86400, // 60 * 60 * 24 - 1 day
-    DEFAULT_TIMEOUT: 1000, // 60 * 60 * 24 - 1 day
+    DEFAULT_TIMEOUT: 1000,
 
     status: {
         MEMBER: 'member',

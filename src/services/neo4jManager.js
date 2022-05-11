@@ -2,6 +2,7 @@ const neo4j = require('neo4j-driver');
 const queries = require('./neo4j/queries');
 const consts = require('./neo4j/helpers/consts');
 const {deconstructCypherObject} = require('./neo4j/helpers/cypherHelper');
+
 const HEALTH_CHECK_STRING = 'Healthy';
 const QUERY_RESULT_ERROR_PREFIX = 'ERROR:';
 
@@ -142,7 +143,6 @@ class Neo4jManager {
             this[`${name}Executor`] = async (...args) => this.querySessionWrapper(queries[name], 'resultFunc', queries[name].transaction, ...args);
         });
     }
-
 }
 
 module.exports = Neo4jManager;

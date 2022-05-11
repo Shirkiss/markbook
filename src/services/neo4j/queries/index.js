@@ -18,9 +18,7 @@ const leaveGroup = require('./leave-group');
 const removeUserFriend = require('./remove-user-friend');
 const updateGroup = require('./update-group');
 const deleteAll = require('./delete-all');
-// const searchGroup = require('./search-group');
-
-
+const searchGroup = require('./search-group');
 
 module.exports = {
     addUserFriend,
@@ -42,5 +40,6 @@ module.exports = {
     leaveGroup,
     removeUserFriend,
     updateGroup,
-    deleteAll
+    deleteAll,
+    searchGroup,
 };
