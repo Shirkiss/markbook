@@ -1,38 +1,9 @@
 const neo4j = require('neo4j-driver');
 const queries = require('./neo4j/queries');
 const consts = require('./neo4j/helpers/consts');
+const {deconstructCypherObject} = require('./neo4j/helpers/cypherHelper');
 const HEALTH_CHECK_STRING = 'Healthy';
 const QUERY_RESULT_ERROR_PREFIX = 'ERROR:';
-
-
-function deconstructCypherObject(records, i = 0) {
-    const arrayOriginally = Array.isArray(records);
-    let resValue = arrayOriginally ? records : [records];
-    resValue = resValue.map((m) => {
-        const converted = extractNodeProperties(m);
-        if (converted && typeof converted === 'object') {
-            Object.keys(converted).forEach((k) => {
-                converted[k] = deconstructCypherObject(extractNodeProperties(converted[k]), i + 1);
-            });
-        }
-        return converted;
-    });
-    return (resValue.length > 1 || (arrayOriginally && i > 0)) ? resValue : resValue[0];
-}
-
-function extractNodeProperties(obj) {
-    if (typeof obj !== 'object' || !obj || Array.isArray(obj)) {
-        return obj;
-    }
-    if (obj.values) {
-        const recordValues = [...obj.values()];
-        return extractNodeProperties(recordValues.length === 1 ? recordValues[0] : recordValues);
-    }
-    if (obj.properties) {
-        return obj.properties;
-    }
-    return obj;
-}
 
 class Neo4jManager {
 
@@ -117,7 +88,7 @@ class Neo4jManager {
 
         // validate parameters
         const [params, metadata] = args;
-        const { required, optional, transaction } = query;
+        const {required, optional, transaction} = query;
 
         let finalParams = params;
 
@@ -160,7 +131,7 @@ class Neo4jManager {
             resValue = null;
         }
 
-        return { value: resValue, err, bookmark: res.bookmark };
+        return {value: resValue, err, bookmark: res.bookmark};
     }
 
 
