@@ -8,6 +8,8 @@ import * as FaIcons from 'react-icons/ai'
 import {IHistory} from './interfaces/IHistory';
 import './App.css';
 import {TAB_INFO, HISTORY, LIST, FRIENDS} from './consts/index'
+import "@webscopeio/react-textarea-autocomplete/style.css";
+
 
 export interface Link {
     id: string;
@@ -34,7 +36,6 @@ export const App = () => {
     const [tagList, setTagList] = useState<Array<Link>>([]);
     const [userId, setUserId] = useState<string>('');
     const [isInEditMode, setIsInEditMode] = useState<boolean>(false);
-    const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
     const [historyList, setHistoryList] = useState<Array<IHistory>>([]);
     const [captionAutocompleteValue, setCaptionAutocompleteValue] = useState<string>('');
@@ -46,7 +47,7 @@ export const App = () => {
     useEffect(() => {
         async function resetAppData() {
             const currUserId = await setCurrentUserId();
-            await getAllTags(currUserId);
+            await getAllKeywords(currUserId);
             await getAllLinks(currUserId);
             getHistory();
 
@@ -64,7 +65,6 @@ export const App = () => {
         setCurrentTab(TAB_INFO);
         setLinkId(itemId);
         const curr = tagList.find(item => item.id === itemId);
-        setCaption(curr?.caption || '');
         setIsPrivate(curr?.isPrivate || false);
         setFavIconUrl(curr?.favIconUrl || '');
         setUrl(curr?.urlValue || '');
@@ -127,7 +127,14 @@ export const App = () => {
         updateLinkList(result);
     }
 
-    async function getAllTags(userId: string) {
+    async function filterSetCaption(value: string) {
+        if (value[0] === '@') {
+            await getFilterKeywords(value.substring(1));
+        }
+        setCaption(value)
+    }
+
+    async function getAllKeywords(userId: string) {
         const response = await fetch(`http://localhost:8000/keywords/initialKeywordsSuggestion/${userId}`, {
             method: 'POST',
             headers: {
@@ -136,12 +143,20 @@ export const App = () => {
             },
         });
         const result = await response.json();
+        setCaptionAutocompleteTags(result);
+    }
 
-        // const res = result.map((item: string) => {
-        //     console.log("Curr item" , item);
-        //     return {name: item};
-        // });
-        console.log("Keywords : ", result);
+    async function getFilterKeywords(prefix: string) {
+        const response = await fetch(`http://localhost:8000/keywords/keywordsSuggestion/${userId}/${prefix}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+        });
+        let result = await response.json();
+
+        result = result.filter((item: string, index: number) => result.indexOf(item) === index);
         setCaptionAutocompleteTags(result);
     }
 
@@ -153,7 +168,6 @@ export const App = () => {
         chrome.storage.sync.get('userId', ({userId}) => {
             const fetchData = async () => {
                 const keywordsSave = getWordsWithPrefixFromText(caption, '#').join();
-                console.log("The keywords are");
                 let data = new URLSearchParams({
                     name,
                     keywords: keywordsSave,
@@ -174,7 +188,6 @@ export const App = () => {
                     body: data,
                 }).then((response) => {
                     response.json().then(data => {
-                        console.log("With New :", data);
                         updateLinkList(data);
                     });
                 });
@@ -298,19 +311,20 @@ export const App = () => {
                            onChange={e => setName(e.target.value)}/>
                 </div>
                 <div className="tab_data">
-                    <textarea id="caption" className="tab_area" placeholder="Caption" name="caption" value={caption}
-                            rows={4} cols={50} onChange={e => setCaption(e.target.value)}/>
                     <ReactTextareaAutocomplete
-                       className="my-textarea"
+                       className="tab_input"
                        loadingComponent={() => <span>Loading</span>}
+                       onChange={e => filterSetCaption(e.target.value)}
                        minChar={0}
+                       rows={4} 
+                       cols={20}
                        trigger={{
                          "@": {
                            dataProvider: (token) => {
                             return captionAutocompleteTags;
                            },
                            component: Item,
-                           output: (item: any, trigger) => item
+                           output: (item: any, trigger) => `@${item}`
                          }
                        }}
                      />
