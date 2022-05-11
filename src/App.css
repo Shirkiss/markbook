@@ -9,9 +9,10 @@
 }
 
 .tab_input {
-   border-radius: 6px;
-   height: 30px;
-   width: 70%;
+  border-width: initial;
+  border-radius: 6px;
+  height: 30px;
+  width: 70% !important;
 }
 
 .history_search {
