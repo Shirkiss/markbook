@@ -156,7 +156,7 @@ export const App = () => {
         });
         let result = await response.json();
 
-        result = result.filter((item: string, index: number) => result.indexOf(item) === index);
+        result = result.filter((item: string, index: number) => result.indexOf(item) === index && item !== "");
         setCaptionAutocompleteTags(result);
     }
 
@@ -287,15 +287,9 @@ export const App = () => {
             updateLinkList(result);
         }
     }
-    //const Item = ( item: string ) => <div>{item}</div>;
-    /* tslint:disable-next-line */
     
-    //const Item: React.FunctionComponent<{tag: string}> = ( {tag: string} ) => <div>{tag}</div>;
-    //const Item = ({ name, char }: IShir): JSX.Element => <div>{name}</div>;
-    //const Item = ({ entity: { name, char } : {entity: { name: string, char:string }} }) => <div>{`${name}: ${char}`}</div>;
-    //const Item = ({entity}: { entity: Entity } ) => <div>{`${entity.name}: ${entity.char}`}</div>;
     /* tslint:disable-next-line */
-    const Item = ( props: ItemComponentProps<any> ) => <div>{`${props.entity}: value`}</div>;
+    const Item = ( props: ItemComponentProps<any> ) => <div>{props.entity}</div>;
 
     return (
         <div className="App">
