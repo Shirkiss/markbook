@@ -11,8 +11,6 @@ router.post('/getUserFriends/:userId', [services.setHeaders, friendsController.g
 
 router.post('/getUserFriendsOnGroup/:userId', [services.setHeaders, friendsController.getUserFriendsOnGroup]);
 
-router.post('/getUserGroups/:userId', [services.setHeaders, friendsController.getUserFriendsOnGroup]);
-
 router.post('/removeUserFriend/:userId', [services.setHeaders, friendsController.removeUserFriend]);
 
 module.exports = router;
