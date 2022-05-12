@@ -1,11 +1,7 @@
-export interface IHistory {
-    id: string;
+import HistoryItem = chrome.history.HistoryItem;
+
+export interface IHistory extends HistoryItem{
     favicon: string;
-    url?: string | undefined;
-    title?: string | undefined;
-    lastVisitTime?: number | undefined;
-    typedCount?: number | undefined;
-    visitCount?: number | undefined;
 }
 
 // id: "44592"
