@@ -20,6 +20,11 @@ const History = styled.div`
      padding-left: 10px;
 `
 
+function sortByVisitCount(userHistoryItems: Array<IHistory>) {
+    // @ts-ignore
+    return userHistoryItems.sort(({visitCount: a}, {visitCount: b}) => (a === undefined) > (b === undefined) || a < b ? 1 : -1)
+}
+
 const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>, onEditHistory:Function}> = ({historyList, onEditHistory}) => {
     const [historyListDisplay, setHistoryListDisplay] = useState<Array<IHistory>>(historyList);
 
@@ -34,6 +39,7 @@ const HistoryTab: React.FunctionComponent<{historyList:Array<IHistory>, onEditHi
                     })
                 }
             });
+            // TODO: add here sort if needed
             setHistoryListDisplay(userHistoryItems);
         });
     };
