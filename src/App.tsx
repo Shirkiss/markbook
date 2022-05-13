@@ -38,8 +38,8 @@ export const App = () => {
     const [isInEditMode, setIsInEditMode] = useState<boolean>(false);
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
     const [historyList, setHistoryList] = useState<Array<IHistory>>([]);
-    const [captionAutocompleteValue, setCaptionAutocompleteValue] = useState<string>('');
     const [captionAutocompleteTags, setCaptionAutocompleteTags] = useState<Array<string>>([]);
+    const [editUrlValue, setEditUrlValue] = useState<boolean>(false);
 
     /**
      * Get current URL
@@ -128,7 +128,7 @@ export const App = () => {
     }
 
     async function filterSetCaption(value: string) {
-        if (value[0] === '@') {
+        if (value[0] === '#') {
             await getFilterKeywords(value.substring(1));
         }
         setCaption(value)
@@ -288,16 +288,18 @@ export const App = () => {
         }
     }
     
-    /* tslint:disable-next-line */
     const Item = ( props: ItemComponentProps<any> ) => <div>{props.entity}</div>;
 
     return (
         <div className="App">
             <Sidebar setCurrentTab={onChangeTab} currentTab={currentTab}/>
             {currentTab === TAB_INFO && <div>
-                <div className="tab_data">
-                    <input type="text" className="tab_input" id="urlBox" value={urlValue}
-                           onChange={e => setUrl(e.target.value)}/>
+                 <div className="tab_data">
+                    <img src={getFaviconFromUrl(urlValue)} className="list_favicon"/>
+                    {!editUrlValue &&<div>{urlValue.replace(/(.{25})..+/, "$1…")}</div> }
+                    {editUrlValue && <input type="text" className="tab_input" id="urlBox" value={urlValue}
+                           onChange={e => setUrl(e.target.value)}/>}
+                    <FaIcons.AiTwotoneEdit size={30} onClick={() => setEditUrlValue(true)}/>
                 </div>
                 <div className="tab_data">
                     <label htmlFor="linkName" className="name_label">Name:</label>
@@ -312,15 +314,16 @@ export const App = () => {
                        minChar={0}
                        rows={4} 
                        cols={20}
+                       listClassName="items_list"
                        trigger={{
-                         "@": {
+                         "#": {
                            dataProvider: (token) => {
                             return captionAutocompleteTags;
                            },
                            component: Item,
-                           output: (item: any, trigger) => `@${item}`
+                           output: (item: any, trigger) => `#${item}`
                          }
-                       }}
+                       }} 
                      />
                 </div>
 
