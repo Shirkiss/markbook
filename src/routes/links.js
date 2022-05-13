@@ -23,4 +23,6 @@ router.use('/getLink/:linkId', [services.setHeaders, linksController.getLink]);
 
 router.use('/searchAll/:userId', [services.setHeaders, linksController.searchAll]);
 
+router.use('/getMostClickedLinks/:userId', [services.setHeaders, linksController.getMostClickedLinks]);
+
 module.exports = router;

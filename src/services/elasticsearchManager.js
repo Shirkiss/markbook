@@ -146,6 +146,19 @@ async function prefixSearch(prefix, index, field, userId) {
     return result.hits.hits;
 }
 
+async function getUserDocumentsByHighestCounter(userId, index) {
+    const result = await client.search({
+        index,
+        body: {
+            sort: { "counter" : "desc" },
+            query: {
+                "term": {userId}
+            }
+        }
+    })
+    return result.hits.hits;
+}
+
 async function prefixSearchMulti(prefix, fields, userId, index) {
     const result = await client.search({
             index,
@@ -290,5 +303,6 @@ module.exports = {
     mostFrequentKeyword,
     mostFrequentKeywordForUser,
     addDocumentWithId,
-    increaseCounter
+    increaseCounter,
+    getUserDocumentsByHighestCounter
 };

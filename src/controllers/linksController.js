@@ -120,6 +120,17 @@ async function searchAll(req, res, next) {
     next();
 }
 
+async function getMostClickedLinks(req, res, next) {
+    try {
+        const {userId} = req.params;
+        const links = await elasticsearchManager.getUserDocumentsByHighestCounter(userId, ELASTICSEARCH_LINKS_INDEX);
+        res.send(links);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to get user documents by highest counter', error});
+    }
+    next();
+}
+
 async function deleteAllLinks(req, res, next) {
     try {
         const {userId} = req.params;
@@ -155,5 +166,5 @@ async function getLink(req, res, next) {
 }
 
 module.exports = {
-    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks, addFaviconAndSaveLinks, linkClicked
+    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks, addFaviconAndSaveLinks, linkClicked, getMostClickedLinks
 }
