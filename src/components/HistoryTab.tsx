@@ -3,8 +3,8 @@ import * as FaIcons from 'react-icons/ai'
 import styled from 'styled-components'
 import SearchBox from './SearchBox';
 import {IHistory} from '../interfaces/IHistory';
+import HistoryItem = chrome.history.HistoryItem; // eslint-disable-line no-restricted-globals
 import {getFaviconFromUrl} from '../services/services';
-
 
 const History = styled.div`
   display: flex;
@@ -20,9 +20,27 @@ const History = styled.div`
   padding-left: 10px;
 `
 
-function sortByVisitCount(userHistoryItems: Array<IHistory>) {
+function sortByVisitCount(userHistoryItems: (IHistory | HistoryItem)[]) {
     // @ts-ignore
     return userHistoryItems.sort(({visitCount: a}, {visitCount: b}) => (a === undefined) > (b === undefined) || a < b ? 1 : -1)
+}
+
+function getMarkbooksSuggestions(userHistoryItems: Array<IHistory>, numberOfSuggestions: number) {
+    chrome.history.search({text: '', maxResults: 1000}, function (data) {
+        data = sortByVisitCount(data);
+        const userHistoryItems: Array<IHistory> = [];
+        const loopLength = Math.min(numberOfSuggestions, data.length);
+
+        for (let i = 0; i < loopLength; i++) {
+            if (data[i].url) {
+                userHistoryItems.push({
+                    ...data[i],
+                    favicon: getFaviconFromUrl(data[i].url),
+                })
+            }
+        }
+        return userHistoryItems;
+    });
 }
 
 const HistoryTab: React.FunctionComponent<{ historyList: Array<IHistory>, onEditHistory: Function }> = ({
