@@ -7,11 +7,11 @@ import styled from 'styled-components'
 import { SidebarData } from './SidebarData';
 
 const Navbar = styled.div`
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    height: 3.5rem;
-    background-color: #000080;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  height: 3.5rem;
+  background-color: #232345;
 `
 
 const MenuIconOpen = styled.div`
@@ -34,7 +34,7 @@ const MenuIconClose = styled.div`
 const SidebarMenu = styled.div<{close: boolean}>`
     width: 50px;
     height: 100vh;
-    background-color: #000080;
+  background-color: #232345;
     position: fixed;
     top: 0;
     right: ${({ close}) => close ? '-100%' : '0'};
