@@ -296,10 +296,10 @@ export const App = () => {
             {currentTab === TAB_INFO && <div>
                  <div className="tab_data">
                     <img src={getFaviconFromUrl(urlValue)} className="list_favicon"/>
-                    {!editUrlValue &&<div>{urlValue.replace(/(.{25})..+/, "$1…")}</div> }
-                    {editUrlValue && <input type="text" className="tab_input" id="urlBox" value={urlValue}
+                    {!editUrlValue &&<div className='non_edit_mode'>{urlValue.replace(/(.{26})..+/, "$1…")}</div> }
+                    {editUrlValue && <input type="text" className="edit_mode" id="urlBox" value={urlValue}
                            onChange={e => setUrl(e.target.value)}/>}
-                    <FaIcons.AiTwotoneEdit size={30} onClick={() => setEditUrlValue(true)}/>
+                    <FaIcons.AiTwotoneEdit size={30} onClick={() => setEditUrlValue(!editUrlValue)}/>
                 </div>
                 <div className="tab_data">
                     <label htmlFor="linkName" className="name_label">Name:</label>
