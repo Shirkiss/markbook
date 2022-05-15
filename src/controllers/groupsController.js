@@ -220,7 +220,7 @@ async function updateGroup(req, res, next) {
         const data = req.body;
 
         const result = await neo4jManager.performQuery('updateGroup', {
-                userId,
+                ownerId: userId,
                 ...data
             }
         )

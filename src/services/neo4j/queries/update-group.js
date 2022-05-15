@@ -35,7 +35,7 @@ class UpdateGroup extends CypherQuery {
         coalesce($editParams.groupType, '') AS newGroupType
       
       CALL apoc.do.when(
-        origGroupType = '${consts.groupType.PRIVATE}' AND newGroupType = '${consts.groupType.PUBLIC}',
+        (origGroupType = '${consts.groupType.CLOSED}' OR origGroupType = '${consts.groupType.PRIVATE}') AND newGroupType = '${consts.groupType.PUBLIC}',
         'OPTIONAL MATCH (group)-[joinRequests:${relations.REQUEST_JOIN_TO}]-(:${props.USER})
         DELETE joinRequests
         RETURN count(joinRequests) AS joinRequestCount',

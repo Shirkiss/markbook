@@ -22,7 +22,7 @@ class JoinGroup extends CypherQuery {
 
     // TODO: Add cleanup for expired connections
 
-    async _joinPrivateGroup(txc, userId, groupId) {
+    async _joinClosedGroup(txc, userId, groupId) {
         const {records} = await txc.run(
             `MATCH (user:${props.USER} { id: $userId })
       MATCH (group:${props.GROUP} { id: $groupId })
@@ -91,10 +91,10 @@ class JoinGroup extends CypherQuery {
                     };
                     break;
                 }
-                case consts.groupType.PRIVATE: {
+                case consts.groupType.CLOSED: case consts.groupType.PRIVATE:{
                     // TODO: add max number of join requests for group / user
                     value = {
-                        ...await this._joinPrivateGroup(txc, userId, groupId),
+                        ...await this._joinClosedGroup(txc, userId, groupId),
                         userId,
                     };
                     break;

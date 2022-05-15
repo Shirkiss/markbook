@@ -44,7 +44,8 @@ const consts = {
 
     groupType: {
         PUBLIC: 'Public',
-        PRIVATE: 'Private',
+        CLOSED: 'Closed',
+        PRIVATE: 'Private'
     },
 };
 

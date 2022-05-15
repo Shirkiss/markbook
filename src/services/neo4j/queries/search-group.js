@@ -63,7 +63,8 @@ class SearchGroup extends CypherQuery {
         await this.createFullTextSearchIndex(txc);
         const searchTerm = `*${keyword}*`;
         const query = `CALL db.index.fulltext.queryNodes('group_search_fulltext', $searchTerm, { limit: $maxResults }) YIELD node AS group
-      OPTIONAL MATCH (user:${props.USER} { id: $userId })-[:${relations.FRIEND_OF}]-(friend:${props.USER})-[:${relations.MEMBER_OF}]->(group)
+        WHERE group.groupType in ['${consts.groupType.PUBLIC}', '${consts.groupType.CLOSED}']
+      OPTIONAL MATCH (user:${props.USER} { id: $userId })-[:${relations.FRIEND_OF}]-(friend:${props.USER})-[:${relations.MEMBER_OF}]->(group: ${props.GROUP})
       WITH group, count(DISTINCT friend) AS friendsCount
       RETURN properties(group) AS groupProps, friendsCount
       ORDER BY friendsCount DESC`;
