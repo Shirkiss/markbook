@@ -155,7 +155,6 @@ export const App = () => {
             },
         });
         let result = await response.json();
-
         result = result.filter((item: string, index: number) => result.indexOf(item) === index && item !== "");
         setCaptionAutocompleteTags(result);
     }
@@ -306,6 +305,7 @@ export const App = () => {
                     <input type="text" className="tab_input_with_label" id="linkName" value={name}
                            onChange={e => setName(e.target.value)}/>
                 </div>
+                {captionAutocompleteTags}
                 <div className="tab_data">
                     <ReactTextareaAutocomplete
                        className="tab_input"
@@ -315,10 +315,12 @@ export const App = () => {
                        rows={4} 
                        cols={20}
                        listClassName="items_list"
+                       onItemSelected={() => getAllKeywords(userId)}
                        trigger={{
                          "#": {
                            dataProvider: (token) => {
-                            return captionAutocompleteTags;
+                               console.log("Dataprovider is being called", captionAutocompleteTags);
+                               return captionAutocompleteTags;
                            },
                            component: Item,
                            output: (item: any, trigger) => `#${item}`
