@@ -99,4 +99,4 @@ const HistoryTab: React.FunctionComponent<{ historyList: Array<IHistory>, onEdit
     )
 }
 
-export default HistoryTab
+export default HistoryTab;

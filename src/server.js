@@ -7,8 +7,8 @@ const keywordsManager = require('./routes/keywords');
 const path = require('path');
 const redisManager = require('./services/redisManager');
 const services = require('./services/services');
-const neo4jManager = require('../services/neo4jManager');
-await neo4jManager.init();
+const neo4jManager = require('./services/neo4jManager');
+neo4jManager.init().then();
 
 const app = express();
 redisManager.start();

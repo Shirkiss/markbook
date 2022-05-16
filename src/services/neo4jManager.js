@@ -7,7 +7,6 @@ const HEALTH_CHECK_STRING = 'Healthy';
 const QUERY_RESULT_ERROR_PREFIX = 'ERROR:';
 
 class Neo4jManager {
-
     constructor() {
         this.database_name = process.env.NEO4J_DATABASE_NAME || 'neo4j';
     }

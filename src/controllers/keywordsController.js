@@ -15,14 +15,14 @@ async function getInitialKeywordsSuggestion(req, res, next) {
 async function getKeywordsSuggestion(req, res, next) {
     try {
         const {userId, prefix} = req.params;
-        const keywords = await keywordsSuggestionService.getKeywordsSuggestion(userId, prefix, ELASTICSEARCH_LINKS_INDEX);
+        const keywords = prefix ? await keywordsSuggestionService.getKeywordsSuggestion(userId, prefix, ELASTICSEARCH_LINKS_INDEX)
+            : await keywordsSuggestionService.getInitialKeywordsSuggestion(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(keywords);
     } catch (error) {
         res.status(500).send({message: 'Failed to send keywords suggestion', error});
     }
     next();
 }
-
 
 
 module.exports = {
