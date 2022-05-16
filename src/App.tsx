@@ -305,7 +305,6 @@ export const App = () => {
                     <input type="text" className="tab_input_with_label" id="linkName" value={name}
                            onChange={e => setName(e.target.value)}/>
                 </div>
-                {captionAutocompleteTags}
                 <div className="tab_data">
                     <ReactTextareaAutocomplete
                        className="tab_input"
@@ -319,7 +318,6 @@ export const App = () => {
                        trigger={{
                          "#": {
                            dataProvider: (token) => {
-                               console.log("Dataprovider is being called", captionAutocompleteTags);
                                return captionAutocompleteTags;
                            },
                            component: Item,
