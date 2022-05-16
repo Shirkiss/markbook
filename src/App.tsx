@@ -155,7 +155,6 @@ export const App = () => {
             },
         });
         let result = await response.json();
-
         result = result.filter((item: string, index: number) => result.indexOf(item) === index && item !== "");
         setCaptionAutocompleteTags(result);
     }
@@ -315,10 +314,11 @@ export const App = () => {
                        rows={4} 
                        cols={20}
                        listClassName="items_list"
+                       onItemSelected={() => getAllKeywords(userId)}
                        trigger={{
                          "#": {
                            dataProvider: (token) => {
-                            return captionAutocompleteTags;
+                               return captionAutocompleteTags;
                            },
                            component: Item,
                            output: (item: any, trigger) => `#${item}`

@@ -21,9 +21,6 @@
   border: none !important;
   font-size: 14px;
 }
-.rta__item:nth-child(1) {
-  display: none;
-}
 
 .rta__item:nth-child(2) .rta__entity {
   border-top-left-radius: 6px;
