@@ -31,4 +31,8 @@ router.post('/updateGroup/:userId', [services.setHeaders, groupsController.updat
 
 router.post('/getGroupLinks/:groupId', [services.setHeaders, groupsController.getGroupLinks]);
 
+router.post('/addLinkToGroup/:userId/:groupId', [services.setHeaders, groupsController.addLinkToGroup]);
+
+router.post('/deleteLinkFromGroup/:userId/:groupId', [services.setHeaders, groupsController.deleteLinkFromGroup]);
+
 module.exports = router;

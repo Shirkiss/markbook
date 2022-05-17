@@ -1,15 +1,28 @@
 const elasticsearchManager = require('../services/elasticsearchManager');
+const neo4jManager = require('../services/neo4jManager');
 const ELASTICSEARCH_LINKS_INDEX = 'links';
 const getFavicons = require('get-website-favicon');
 const {getFaviconFromUrl} = require('../services/services');
 
+async function addLinkToGroups(groups, userId, linkId) {
+    for (let i = 0; i < groups.length; ++i) {
+        await neo4jManager.performQuery('addLinkToGroup', {
+                userId,
+                groupId: groups[i],
+                linkId
+            }
+        )
+    }
+}
+
 async function prepareDataAndAddLink(userId, data) {
     data.keywords = data.keywords?.split(',');
-    data.groups = data.groups?.split(',');
     data.userId = userId;
     data.counter = 0;
     const linkId = `${userId}:${data.urlValue}`;
+    data.groups = data.groups?.split(',');
     await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
+    await addLinkToGroups(data.groups, userId, linkId);
 }
 
 async function saveLink(req, res, next) {
@@ -166,5 +179,15 @@ async function getLink(req, res, next) {
 }
 
 module.exports = {
-    saveLink, editLink, deleteLink, deleteAllLinks, getAllLinks, getLink, searchAll, saveLinks, addFaviconAndSaveLinks, linkClicked, getMostClickedLinks
+    saveLink,
+    editLink,
+    deleteLink,
+    deleteAllLinks,
+    getAllLinks,
+    getLink,
+    searchAll,
+    saveLinks,
+    addFaviconAndSaveLinks,
+    linkClicked,
+    getMostClickedLinks
 }

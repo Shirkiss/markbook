@@ -90,7 +90,9 @@ class AddLinkToGroup extends CypherQuery {
                 err = 'NOT_MEMBER';
             } else {
                 const groupLinksList = await this._getGroupLinks(txc, groupId);
-                groupLinksList.push(linkId);
+                if (!groupLinksList.includes(linkId)) {
+                    groupLinksList.push(linkId);
+                }
                 ({group} = await this._updateGroup(txc, userId, groupId, groupLinksList));
             }
         }, txConfig);
