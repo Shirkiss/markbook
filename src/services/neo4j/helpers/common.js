@@ -68,6 +68,16 @@ class Common {
         return results.records.length === 1;
     }
 
+    static async checkUserIsMember(txc, userId, groupId) {
+        const results = await txc.run(
+            `MATCH (:${props.USER} { id: $userId }) -[:${relations.MEMBER_OF}]-> (group:${props.GROUP} { id: $groupId })
+      RETURN group.id AS groupId`,
+            { userId, groupId },
+        );
+
+        return results.records.length === 1;
+    }
+
     static async checkPendingRequestExists(txc, userId, groupId) {
         const results = await txc.run(
             `MATCH (:${props.USER} { id: $userId }) -[:${relations.REQUEST_JOIN_TO}]-> (group:${props.GROUP} { id: $groupId })

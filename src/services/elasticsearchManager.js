@@ -150,7 +150,7 @@ async function getUserDocumentsByHighestCounter(userId, index) {
     const result = await client.search({
         index,
         body: {
-            sort: { "counter" : "desc" },
+            sort: {"counter": "desc"},
             query: {
                 "term": {userId}
             }
@@ -189,6 +189,15 @@ async function getById(id, index) {
         }
     )
     return result.hits.hits;
+}
+
+async function getByIds(ids, index) {
+    const result = await client.mget({
+            index,
+            ids
+        }
+    )
+    return result.docs;
 }
 
 async function prefixSearchAllFields(prefix, userId, index) {
@@ -304,5 +313,6 @@ module.exports = {
     mostFrequentKeywordForUser,
     addDocumentWithId,
     increaseCounter,
-    getUserDocumentsByHighestCounter
+    getUserDocumentsByHighestCounter,
+    getByIds
 };

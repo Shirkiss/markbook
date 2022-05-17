@@ -1,4 +1,6 @@
 const neo4jManager = require('../services/neo4jManager');
+const elasticsearchManager = require('../services/elasticsearchManager');
+const ELASTICSEARCH_LINKS_INDEX = 'links';
 
 async function getUserGroups(req, res, next) {
     try {
@@ -232,6 +234,23 @@ async function updateGroup(req, res, next) {
     next();
 }
 
+async function getGroupLinks(req, res, next) {
+    try {
+        const {groupId} = req.params;
+
+        const {value} = await neo4jManager.performQuery('getGroupLinks', {
+                groupId
+            }
+        )
+
+        const links = await elasticsearchManager.getByIds(value.groupLinks, ELASTICSEARCH_LINKS_INDEX);
+        res.send(links);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to get groups links', error});
+    }
+    next();
+}
+
 
 module.exports = {
     getUserGroups,
@@ -246,5 +265,6 @@ module.exports = {
     kickMember,
     leaveGroup,
     searchGroup,
-    updateGroup
+    updateGroup,
+    getGroupLinks
 }

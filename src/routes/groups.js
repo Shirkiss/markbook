@@ -29,4 +29,6 @@ router.post('/searchGroup/:userId', [services.setHeaders, groupsController.searc
 
 router.post('/updateGroup/:userId', [services.setHeaders, groupsController.updateGroup]);
 
+router.post('/getGroupLinks/:groupId', [services.setHeaders, groupsController.getGroupLinks]);
+
 module.exports = router;

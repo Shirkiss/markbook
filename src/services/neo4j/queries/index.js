@@ -20,8 +20,14 @@ const updateGroup = require('./update-group');
 const deleteAll = require('./delete-all');
 const searchGroup = require('./search-group');
 const getGroupPendingJoinRequests = require('./get-group-pending-join-requests');
+const addLinkToGroup = require('./add-link-to-group');
+const deleteLinkFromGroup = require('./delete-link-from-group');
+const getGroupLinks = require('./get-group-links');
 
 module.exports = {
+    getGroupLinks,
+    deleteLinkFromGroup,
+    addLinkToGroup,
     addUserFriend,
     approveJoinRequest,
     areUsersFriends,
