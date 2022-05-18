@@ -10,7 +10,7 @@ const Search = styled.div`
      height: 27px;
      border-radius: 16px;
      background: rgb(255, 255, 255);
-     margin: 10px 0px 0px 10px;
+     margin: 10px 25px 0px 10px;
      box-shadow: none;
      border: 1px solid rgb(81 84 89);
      padding-left: 10px;
@@ -19,7 +19,7 @@ const Search = styled.div`
 const Input = styled.input`
        outline: none;
        border: none;
-       margin-left: 10px;
+       margin-left: 3px;
        &:focus {
         outline: none;
       }

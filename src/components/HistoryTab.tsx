@@ -1,11 +1,16 @@
-import React, {useState} from 'react'
+import React, {Props, useState} from 'react'
+import Select, {SingleValue, ActionMeta} from 'react-select'
 import * as FaIcons from 'react-icons/ai'
-import styled from 'styled-components'
+import styled , { ThemedStyledFunction} from 'styled-components'
 import SearchBox from './SearchBox';
 import {IHistory} from '../interfaces/IHistory';
-import HistoryItem = chrome.history.HistoryItem; // eslint-disable-line no-restricted-globals
 import {getFaviconFromUrl} from '../services/services';
+import {getHistoryByDate, getMarkbooksSuggestions} from '../services/historyService';
 
+interface ISelectedValue {
+    value?: string|number;
+    label: string;
+}
 const History = styled.div`
   display: flex;
   -webkit-box-align: center;
@@ -18,36 +23,73 @@ const History = styled.div`
   box-shadow: none;
   border: 1px solid rgb(81 84 89);
   padding-left: 10px;
-`
+`;
 
-function sortByVisitCount(userHistoryItems: (IHistory | HistoryItem)[]) {
-    // @ts-ignore
-    return userHistoryItems.sort(({visitCount: a}, {visitCount: b}) => (a === undefined) > (b === undefined) || a < b ? 1 : -1)
-}
+const SortIconUp = styled.div`
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+`;
 
-function getMarkbooksSuggestions(userHistoryItems: Array<IHistory>, numberOfSuggestions: number) {
-    chrome.history.search({text: '', maxResults: 1000}, function (data) {
-        data = sortByVisitCount(data);
-        const userHistoryItems: Array<IHistory> = [];
-        const loopLength = Math.min(numberOfSuggestions, data.length);
+const SortIconDown = styled.div`
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+`;
 
-        for (let i = 0; i < loopLength; i++) {
-            if (data[i].url) {
-                userHistoryItems.push({
-                    ...data[i],
-                    favicon: getFaviconFromUrl(data[i].url),
-                })
-            }
-        }
-        return userHistoryItems;
-    });
-}
+
 
 const HistoryTab: React.FunctionComponent<{ historyList: Array<IHistory>, onEditHistory: Function }> = ({
                                                                                                             historyList,
                                                                                                             onEditHistory
                                                                                                         }) => {
     const [historyListDisplay, setHistoryListDisplay] = useState<Array<IHistory>>(historyList);
+    const [sortOpen, setSortOpen] = useState<Boolean>(false);
+    const countOptions = [
+        { value: 20, label: '20' },
+        { value: 50, label: '50' },
+        { value: 100, label: '100' },
+        { value: 200, label: '200' },
+    ]
+    
+    const timeOptions = [
+        { value: 'Time', label: 'Time' },
+        { value: 'Most visited', label: 'Most visited' },
+        ]
+    const [sortOrder, setSortOrder] = useState<ISelectedValue>(timeOptions[0]);
+    const [sortAmount, setSortAmount] = useState<ISelectedValue>(countOptions[0]);
+
+
+    const handleSortChanged = (newValue: SingleValue<ISelectedValue>, actionMeta: ActionMeta<ISelectedValue>) => {
+        let countOfResults:number = sortAmount.value ? parseInt(sortAmount?.value.toString()) : 50;
+        // Sort order was changed
+        if (typeof newValue?.value === "string") {
+            const selected:ISelectedValue = timeOptions.find(x => x.value == newValue?.value) ?? timeOptions[0];
+            setSortOrder(selected);
+            if (newValue?.value === 'Time') {
+                getHistoryByDate(countOfResults, setHistoryListDisplay);
+           } else {
+                getMarkbooksSuggestions(countOfResults, setHistoryListDisplay);
+           }
+        } else {// Sort amount was changed
+            countOfResults = newValue?.value ? parseInt(newValue?.value .toString()) : 50;
+            const selected:ISelectedValue = countOptions.find(x => x.value == countOfResults) ?? countOptions[0];
+            setSortAmount(selected);
+
+            if (sortOrder.value === 'Time') {
+                getHistoryByDate(countOfResults, setHistoryListDisplay);
+           } else {
+                getMarkbooksSuggestions(countOfResults, setHistoryListDisplay);
+           } 
+        }
+  
+    }
 
     const searchHistory = (value: string) => {
         chrome.history.search({text: value, maxResults: 50}, function (data) {
@@ -64,19 +106,31 @@ const HistoryTab: React.FunctionComponent<{ historyList: Array<IHistory>, onEdit
             setHistoryListDisplay(userHistoryItems);
         });
     };
-    const deleteHistoryItem = (value: string, url: string) => {
-        chrome.history.deleteUrl({url}, () => searchHistory(value));
-    }
 
-    const deleteAllHistoryItems = (value: string) => {
-        chrome.history.deleteAll(() => searchHistory(value));
-    }
-
+    const style = {
+        control: (base:any) => ({
+          ...base,
+          border: 0,
+          maxWidth: "150px",
+          // This line disable the blue border
+          boxShadow: "none"
+        }),
+        indicatorSeparator: (base:any) => ({
+           width:"0px"
+        }),
+      };
+    
     return (
         <>
             <div className="history_search">
                 <SearchBox onSearchChange={searchHistory}/>
+                {sortOpen && <SortIconDown onClick={() => setSortOpen(!sortOpen)}/>}
+                {!sortOpen && <SortIconUp onClick={() => setSortOpen(!sortOpen)}/>}
             </div>
+            {sortOpen && <div className='sort_component'>
+                <Select value={sortOrder} options={timeOptions} styles={style} onChange={handleSortChanged}/>
+                <Select value={sortAmount} options={countOptions} styles={style} onChange={handleSortChanged}/>
+            </div> }
             <table className="list_table">
                 {historyListDisplay.map(item => (
                     <tr className="list_row" key={item.id}>
