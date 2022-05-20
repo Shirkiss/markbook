@@ -22,7 +22,7 @@ async function prepareDataAndAddLink(userId, data) {
     const linkId = `${userId}:${data.urlValue}`;
     data.groups = data.groups?.split(',');
     await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
-    await addLinkToGroups(data.groups, userId, linkId);
+    if (data.groups) await addLinkToGroups(data.groups, userId, linkId);
 }
 
 async function saveLink(req, res, next) {

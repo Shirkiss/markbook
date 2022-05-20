@@ -102,7 +102,6 @@ const HistoryTab: React.FunctionComponent<{ historyList: Array<IHistory>, onEdit
                     })
                 }
             });
-            // TODO: add here sort if needed
             setHistoryListDisplay(userHistoryItems);
         });
     };
