@@ -23,7 +23,8 @@
     "history",
     "identity",
     "identity.email",
-    "bookmarks"
+    "bookmarks",
+    "search"
   ],
   "icons": {
     "16": "markbook-icon.png",

@@ -1,5 +1,4 @@
 const {omnibarDataFormatter} = require('./services/services');
-const GOOGLE_SEARCH_URL = 'https://www.google.com/search?q=';
 const URL_PREFIX = 'url: '
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -52,11 +51,11 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
 
 chrome.omnibox.onInputEntered.addListener((text) => {
     const prefixIndex = text.indexOf(URL_PREFIX);
-    let url = '';
     if (prefixIndex !== -1) {
-        url = text.substring(prefixIndex + URL_PREFIX.length)
+        chrome.tabs.create({url: text.substring(prefixIndex + URL_PREFIX.length)}, () => {
+        });
     } else {
-        url = GOOGLE_SEARCH_URL + text;
+        chrome.search.query({text}, () => {
+        })
     }
-    chrome.tabs.create({url});
 });
