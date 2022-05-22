@@ -3,11 +3,11 @@ const { CypherQuery } = require('../base/cypher-query');
 
 class CreateUser extends CypherQuery {
     get required() {
-        return ['userId'];
+        return ['userId', 'email'];
     }
 
     static get metadataProps() {
-        return ['userId'];
+        return ['userId', 'email'];
     }
 
     get optional() {
@@ -16,7 +16,7 @@ class CreateUser extends CypherQuery {
 
     async perform(session, timeout, ...args) {
         const [params] = args;
-        const {userId} = params;
+        const {userId, email} = params;
 
         // TODO: add encryption for user data
         const txConfig = {
@@ -28,10 +28,10 @@ class CreateUser extends CypherQuery {
 
         await session.writeTransaction(async (txc) => {
             await txc.run(`
-        MERGE (user:${props.USER} { id: $userId })
+        MERGE (user:${props.USER} { id: $userId, email: $email })
         ON CREATE SET user.createdAt = timestamp()
         RETURN 'SUCCESS'`,
-                { userId });
+                { userId, email });
 
         }, txConfig);
 

@@ -20,8 +20,10 @@ const updateGroup = require('./update-group');
 const deleteAll = require('./delete-all');
 const searchGroup = require('./search-group');
 const getGroupPendingJoinRequests = require('./get-group-pending-join-requests');
+const getUserByEmail = require('./get-user-by-email');
 
 module.exports = {
+    getUserByEmail,
     addUserFriend,
     approveJoinRequest,
     areUsersFriends,

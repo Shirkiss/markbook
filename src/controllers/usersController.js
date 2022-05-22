@@ -8,6 +8,7 @@ async function addUserInfo(req, res, next) {
         await redisManager.addUserInfo(userId, data);
         const result = await neo4jManager.performQuery('createUser', {
                 userId,
+                email: data.email
             }
         )
         res.send(result);
