@@ -109,6 +109,20 @@ async function increaseClicksCounter(id, index) {
     await client.indices.refresh({index})
 }
 
+async function userClickedOnLink(id, userId, index) {
+    await client.update({
+        index,
+        id,
+        script: {
+            source: " if(! ctx._source.usersWhoClicked.contains(userId)){ ctx._source.usersWhoClicked += userId }",
+            params: {
+                userId
+            }
+        },
+    })
+    await client.indices.refresh({index})
+}
+
 async function addDocument(data, index) {
     data['timestamp'] = new Date();
     await client.index({
@@ -339,5 +353,6 @@ module.exports = {
     increaseClicksCounter,
     getUserDocumentsByHighestClicksCounter,
     getByIds,
-    getGroupLinks
+    getGroupLinks,
+    userClickedOnLink
 };

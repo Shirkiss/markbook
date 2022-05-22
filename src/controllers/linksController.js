@@ -8,15 +8,15 @@ async function addGroupsLink(userId, data, groups) {
     for (let i = 0; i < groups.length; ++i) {
         data.groupId = groups[i];
         const linkId = `${userId}:${data.urlValue}:${data.groupId}`;
-        data.usersWhoClicked = [userId];
         await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
     }
 }
 
 async function prepareDataAndAddLink(userId, data) {
     data.keywords = data.keywords?.split(',');
-    data.userId = userId;
-    data.clicksCounter = 0;
+    data.userId = data.userId ?? userId;
+    data.clicksCounter = data.clicksCounter ?? 0;
+    data.usersWhoClicked = data.usersWhoClicked ?? [userId];
     const linkId = `${userId}:${data.urlValue}`;
     const groups = data.groups;
     data.groups = undefined;
@@ -96,9 +96,9 @@ async function editLink(req, res, next) {
 async function linkClicked(req, res, next) {
     try {
         const {userId} = req.params;
-        const {urlValue} = req.body;
-        const linkId = `${userId}:${urlValue}`;
+        const {linkId} = req.body;
         await elasticsearchManager.increaseClicksCounter(linkId, ELASTICSEARCH_LINKS_INDEX);
+        await elasticsearchManager.userClickedOnLink(linkId, userId, ELASTICSEARCH_LINKS_INDEX);
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
