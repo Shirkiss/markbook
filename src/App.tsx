@@ -167,9 +167,11 @@ export const App = () => {
         chrome.storage.sync.get('userId', ({userId}) => {
             const fetchData = async () => {
                 const keywordsSave = getWordsWithPrefixFromText(caption, '#').join();
+                const groupsSave = getWordsWithPrefixFromText(caption, '@').join();
                 let data = new URLSearchParams({
                     name,
                     keywords: keywordsSave,
+                    groups: groupsSave,
                     caption,
                     urlValue,
                     isPrivate: isPrivate.toString(),

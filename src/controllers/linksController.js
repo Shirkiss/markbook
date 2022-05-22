@@ -1,28 +1,27 @@
 const elasticsearchManager = require('../services/elasticsearchManager');
-const neo4jManager = require('../services/neo4jManager');
 const ELASTICSEARCH_LINKS_INDEX = 'links';
 const getFavicons = require('get-website-favicon');
 const {getFaviconFromUrl} = require('../services/services');
 
-async function addLinkToGroups(groups, userId, linkId) {
+async function addGroupsLink(userId, data, groups) {
+    groups = groups.split(',');
     for (let i = 0; i < groups.length; ++i) {
-        await neo4jManager.performQuery('addLinkToGroup', {
-                userId,
-                groupId: groups[i],
-                linkId
-            }
-        )
+        data.groupId = groups[i];
+        const linkId = `${userId}:${data.urlValue}:${data.groupId}`;
+        data.usersWhoClicked = [userId];
+        await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
     }
 }
 
 async function prepareDataAndAddLink(userId, data) {
     data.keywords = data.keywords?.split(',');
     data.userId = userId;
-    data.counter = 0;
+    data.clicksCounter = 0;
     const linkId = `${userId}:${data.urlValue}`;
-    data.groups = data.groups?.split(',');
+    const groups = data.groups;
+    data.groups = undefined;
     await elasticsearchManager.addDocumentWithId(linkId, data, ELASTICSEARCH_LINKS_INDEX);
-    if (data.groups) await addLinkToGroups(data.groups, userId, linkId);
+    if (groups) await addGroupsLink(userId, data, groups);
 }
 
 async function saveLink(req, res, next) {
@@ -99,7 +98,7 @@ async function linkClicked(req, res, next) {
         const {userId} = req.params;
         const {urlValue} = req.body;
         const linkId = `${userId}:${urlValue}`;
-        await elasticsearchManager.increaseCounter(linkId, ELASTICSEARCH_LINKS_INDEX);
+        await elasticsearchManager.increaseClicksCounter(linkId, ELASTICSEARCH_LINKS_INDEX);
         const links = await elasticsearchManager.getAll(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
@@ -136,10 +135,10 @@ async function searchAll(req, res, next) {
 async function getMostClickedLinks(req, res, next) {
     try {
         const {userId} = req.params;
-        const links = await elasticsearchManager.getUserDocumentsByHighestCounter(userId, ELASTICSEARCH_LINKS_INDEX);
+        const links = await elasticsearchManager.getUserDocumentsByHighestClicksCounter(userId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
-        res.status(500).send({message: 'Failed to get user documents by highest counter', error});
+        res.status(500).send({message: 'Failed to get user documents by highest clicks counter', error});
     }
     next();
 }

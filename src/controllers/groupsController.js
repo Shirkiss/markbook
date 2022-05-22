@@ -238,12 +238,7 @@ async function getGroupLinks(req, res, next) {
     try {
         const {groupId} = req.params;
 
-        const {value} = await neo4jManager.performQuery('getGroupLinks', {
-                groupId
-            }
-        )
-
-        const links = await elasticsearchManager.getByIds(value.groupLinks, ELASTICSEARCH_LINKS_INDEX);
+        const links = await elasticsearchManager.getGroupLinks(groupId, ELASTICSEARCH_LINKS_INDEX);
         res.send(links);
     } catch (error) {
         res.status(500).send({message: 'Failed to get groups links', error});
@@ -251,46 +246,7 @@ async function getGroupLinks(req, res, next) {
     next();
 }
 
-async function addLinkToGroup(req, res, next) {
-    try {
-        const {groupId, userId} = req.params;
-        const {linkId} = req.body;
-
-        const result = await neo4jManager.performQuery('addLinkToGroup', {
-                userId,
-                groupId,
-                linkId
-            }
-        )
-        res.send(result);
-    } catch (error) {
-        res.status(500).send({message: 'Failed to add link to group', error});
-    }
-    next();
-}
-
-async function deleteLinkFromGroup(req, res, next) {
-    try {
-        const {groupId, userId} = req.params;
-        const {linkId} = req.body;
-
-        const result = await neo4jManager.performQuery('deleteLinkFromGroup', {
-                userId,
-                groupId,
-                linkId
-            }
-        )
-        res.send(result);
-    } catch (error) {
-        res.status(500).send({message: 'Failed to delete link from group', error});
-    }
-    next();
-}
-
-
 module.exports = {
-    deleteLinkFromGroup,
-    addLinkToGroup,
     getUserGroups,
     approveJoinRequest,
     createGroup,

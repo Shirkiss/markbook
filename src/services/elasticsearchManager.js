@@ -31,6 +31,11 @@ async function getAll(userId, index, from = 0, size = 20) {
                         "must": {
                             "term": {userId}
                         },
+                        "must_not": {
+                            "exists": {
+                                "field": "groupId"
+                            }
+                        }
                     },
                 }
             }
@@ -93,12 +98,12 @@ async function editDocument(id, data, index) {
     await client.indices.refresh({index})
 }
 
-async function increaseCounter(id, index) {
+async function increaseClicksCounter(id, index) {
     await client.update({
         index,
         id,
         script: {
-            source: "ctx._source.counter += 1",
+            source: "ctx._source.clicksCounter += 1",
         }
     })
     await client.indices.refresh({index})
@@ -146,11 +151,11 @@ async function prefixSearch(prefix, index, field, userId) {
     return result.hits.hits;
 }
 
-async function getUserDocumentsByHighestCounter(userId, index) {
+async function getUserDocumentsByHighestClicksCounter(userId, index) {
     const result = await client.search({
         index,
         body: {
-            sort: {"counter": "desc"},
+            sort: {"clicksCounter": "desc"},
             query: {
                 "term": {userId}
             }
@@ -179,6 +184,25 @@ async function prefixSearchMulti(prefix, fields, userId, index) {
             }
         }
     )
+    return result.hits.hits;
+}
+
+async function getGroupLinks(groupId, index, from = 0, size = 20) {
+    const result = await client.search({
+            index: index,
+            from,
+            size,
+            body: {
+                query: {
+                    "bool": {
+                        "must": {
+                            "term": {groupId}
+                        },
+                    },
+                }
+            }
+        }
+    );
     return result.hits.hits;
 }
 
@@ -312,7 +336,8 @@ module.exports = {
     mostFrequentKeyword,
     mostFrequentKeywordForUser,
     addDocumentWithId,
-    increaseCounter,
-    getUserDocumentsByHighestCounter,
-    getByIds
+    increaseClicksCounter,
+    getUserDocumentsByHighestClicksCounter,
+    getByIds,
+    getGroupLinks
 };
