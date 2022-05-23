@@ -1,6 +1,7 @@
 const props = {
     GROUP: 'Group',
     USER: 'User',
+    GUEST: 'Guest'
 };
 
 const relations = {
@@ -10,6 +11,7 @@ const relations = {
     REQUEST_JOIN_TO: 'REQUEST_JOIN_TO',
     KICKED_FROM: 'KICKED_FROM',
     REJECTED_FROM: 'REJECTED_FROM',
+    INVITED_TO: 'INVITED_TO'
 };
 
 const mediators = {
@@ -31,6 +33,7 @@ const consts = {
 
     status: {
         MEMBER: 'member',
+        INVITED: 'invited',
         NON_MEMBER: 'nonmember',
         PENDING: 'pending',
         REJECTED: 'rejected',

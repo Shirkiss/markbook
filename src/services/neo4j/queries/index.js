@@ -21,8 +21,14 @@ const deleteAll = require('./delete-all');
 const searchGroup = require('./search-group');
 const getGroupPendingJoinRequests = require('./get-group-pending-join-requests');
 const getUserByEmail = require('./get-user-by-email');
+const inviteGuestToGroup = require('./invite-guest-to-group');
+const deleteGuest = require('./delete-guest');
+const getGuestGroupInvitations = require('./get-guest-group-invitations');
 
 module.exports = {
+    getGuestGroupInvitations,
+    deleteGuest,
+    inviteGuestToGroup,
     getUserByEmail,
     addUserFriend,
     approveJoinRequest,

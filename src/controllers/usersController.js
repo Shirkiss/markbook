@@ -10,7 +10,27 @@ async function addUserInfo(req, res, next) {
                 userId,
                 email: data.email
             }
-        )
+        );
+        const guestGroups = await neo4jManager.performQuery('getGuestGroupInvitations', {
+                guestEmail: data.email
+            }
+        );
+
+        if (guestGroups.value) {
+            const groups = guestGroups.value;
+            for (let i = 0; i < groups.length; ++i) {
+                await neo4jManager.performQuery('joinGroup', {
+                        groupId: groups[i],
+                        userId
+                    }
+                );
+            }
+        }
+
+        await neo4jManager.performQuery('deleteGuest', {
+                guestEmail: data.email,
+            }
+        );
         res.send(result);
     } catch (error) {
         res.status(500).send({message: 'Failed to save user info', error});
