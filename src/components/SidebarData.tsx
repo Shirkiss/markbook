@@ -22,4 +22,9 @@ export const SidebarData = [
         path: '/chats',
         icon: <FaIcons.AiOutlineUsergroupAdd />
     },
+    {
+        title: 'Search',
+        path: '/search',
+        icon: <FaIcons.AiOutlineSearch />
+    },
 ]
