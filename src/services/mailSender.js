@@ -4,7 +4,7 @@ const { promisify } = require('util');
 
 const readFile = promisify(fs.readFile);
 
-async function sendMail() {
+async function sendMail(email, senderName) {
     let transporter = nodemailer.createTransport({
         service: 'hotmail',
         auth: {
@@ -15,9 +15,9 @@ async function sendMail() {
 
     let mailOptions = {
         from: 'markbook-now@outlook.com',
-        to: 'mai252622@gmail.com',
+        to: email,
         subject: 'Join Markbook family',
-        text: `Shir invited you to join Markbook`,
+        text: `${senderName} invited you to join Markbook`,
         html: await readFile('/Users/shirfrauenglas/WebstormProjects/markbook/src/services/mail/mail.html')
     };
 
