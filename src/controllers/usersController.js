@@ -1,34 +1,58 @@
 const redisManager = require('../services/redisManager');
 const neo4jManager = require('../services/neo4jManager');
 
+async function addGroupsInvitations(email, userId) {
+    const guestGroups = await neo4jManager.performQuery('getGuestGroupInvitations', {
+            guestEmail: email
+        }
+    );
+
+    if (guestGroups.value) {
+        const groups = guestGroups.value;
+        for (let i = 0; i < groups.length; ++i) {
+            await neo4jManager.performQuery('joinGroup', {
+                    groupId: groups[i],
+                    userId
+                }
+            );
+        }
+    }
+}
+
+async function addFriendsInvitations(email, friendId) {
+    const guestFriends = await neo4jManager.performQuery('getGuestFriendsInvitations', {
+            guestEmail: email
+        }
+    );
+
+    if (guestFriends.value) {
+        const users = guestFriends.value;
+        for (let i = 0; i < users.length; ++i) {
+            await neo4jManager.performQuery('addUserFriend', {
+                    userId: users[i],
+                    friendId
+                }
+            );
+        }
+    }
+}
+
 async function addUserInfo(req, res, next) {
     try {
         const {userId} = req.params;
         const data = req.body;
+        const {email} = data;
         await redisManager.addUserInfo(userId, data);
         const result = await neo4jManager.performQuery('createUser', {
                 userId,
-                email: data.email
+                email: email
             }
         );
-        const guestGroups = await neo4jManager.performQuery('getGuestGroupInvitations', {
-                guestEmail: data.email
-            }
-        );
-
-        if (guestGroups.value) {
-            const groups = guestGroups.value;
-            for (let i = 0; i < groups.length; ++i) {
-                await neo4jManager.performQuery('joinGroup', {
-                        groupId: groups[i],
-                        userId
-                    }
-                );
-            }
-        }
+        await addGroupsInvitations(email, userId);
+        await addFriendsInvitations(email, userId);
 
         await neo4jManager.performQuery('deleteGuest', {
-                guestEmail: data.email,
+                guestEmail: email,
             }
         );
         res.send(result);

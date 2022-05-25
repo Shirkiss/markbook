@@ -5,6 +5,8 @@ const friendsController = require('../controllers/friendsController');
 
 router.post('/addUserFriend/:userId', [services.setHeaders, friendsController.addUserFriend]);
 
+router.post('/addUserFriendByEmail/:userId', [services.setHeaders, friendsController.addUserFriendByEmail]);
+
 router.post('/areUsersFriends/:userId', [services.setHeaders, friendsController.areUsersFriends]);
 
 router.post('/getUserFriends/:userId', [services.setHeaders, friendsController.getUserFriends]);

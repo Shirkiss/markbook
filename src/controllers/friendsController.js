@@ -18,6 +18,38 @@ async function addUserFriend(req, res, next) {
     next();
 }
 
+async function addUserFriendByEmail(req, res, next) {
+    try {
+        const {userId} = req.params;
+        const {email} = req.body;
+        let result;
+
+        const friendResult = await neo4jManager.performQuery('getUserByEmail', {
+                email,
+            }
+        );
+        if (friendResult?.value?.friendId) {
+            result = await neo4jManager.performQuery('addUserFriend', {
+                    userId,
+                    friendId: friendResult?.value?.friendId,
+                }
+            );
+        } else {
+            // TODO: add invite by email
+
+            result = await neo4jManager.performQuery('inviteGuestToFriendship', {
+                    userId,
+                    guestEmail: email,
+                }
+            );
+        }
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to add user friend', error});
+    }
+    next();
+}
+
 async function areUsersFriends(req, res, next) {
     try {
         const {userId} = req.params;
@@ -91,6 +123,7 @@ async function removeUserFriend(req, res, next) {
 }
 
 module.exports = {
+    addUserFriendByEmail,
     addUserFriend,
     areUsersFriends,
     getUserFriends,

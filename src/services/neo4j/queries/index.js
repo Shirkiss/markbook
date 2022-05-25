@@ -24,8 +24,12 @@ const getUserByEmail = require('./get-user-by-email');
 const inviteGuestToGroup = require('./invite-guest-to-group');
 const deleteGuest = require('./delete-guest');
 const getGuestGroupInvitations = require('./get-guest-group-invitations');
+const inviteGuestToFriendship = require('./invite-guest-to-friendship');
+const getGuestFriendsInvitations = require('./get-guest-friends-invitations');
 
 module.exports = {
+    getGuestFriendsInvitations,
+    inviteGuestToFriendship,
     getGuestGroupInvitations,
     deleteGuest,
     inviteGuestToGroup,
