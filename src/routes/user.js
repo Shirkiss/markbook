@@ -13,4 +13,6 @@ router.post('/getUserInfoField/:userId', [services.setHeaders, userController.ge
 
 router.post('/deleteUser/:userId', [services.setHeaders, userController.deleteUser]);
 
+router.post('/sendInvitationByEmail/:userId', [services.setHeaders, userController.sendInvitationByEmail]);
+
 module.exports = router;

@@ -1,5 +1,6 @@
 const redisManager = require('../services/redisManager');
 const neo4jManager = require('../services/neo4jManager');
+const {sendMail} = require('../services/mailSender');
 
 async function addGroupsInvitations(email, userId) {
     const guestGroups = await neo4jManager.performQuery('getGuestGroupInvitations', {
@@ -112,7 +113,21 @@ async function deleteUser(req, res, next) {
     next();
 }
 
+async function sendInvitationByEmail(req, res, next) {
+    try {
+        const {userId} = req.params;
+        const {friendEmail} = req.body;
+        const name = await redisManager.getUserInfo(userId, 'name');
+        await sendMail(friendEmail, name);
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to get user info', error});
+    }
+    next();
+}
+
 module.exports = {
+    sendInvitationByEmail,
     addUserInfo,
     getUserInfo,
     addUserInfoField,

@@ -16,7 +16,7 @@ async function sendMail(email, senderName) {
     let mailOptions = {
         from: 'markbook-now@outlook.com',
         to: email,
-        subject: 'Join Markbook family',
+        subject: `${senderName} invited you to join Markbook`,
         text: `${senderName} invited you to join Markbook`,
         html: await readFile('/Users/shirfrauenglas/WebstormProjects/markbook/src/services/mail/mail.html')
     };
