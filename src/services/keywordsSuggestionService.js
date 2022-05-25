@@ -2,6 +2,7 @@ const elasticSearch = require("./elasticsearchManager");
 
 const NUMBER_OF_INITIAL_KEYWORDS_SUGGESTIONS = 4;
 const NUMBER_OF_KEYWORDS_SUGGESTIONS = 20;
+const NUMBER_OF_GROUP_KEYWORDS = 4;
 
 
 const getKeywordsSuggestion = async (userId, prefix, index) => {
@@ -49,9 +50,18 @@ const getInitialKeywordsSuggestion = async (userId, index) => {
     return keywords;
 }
 
+const getMostFrequentKeywordForGroup = async (groupId, index) => {
+    let keywords = [];
+    const groupCommonKeywords = await elasticSearch.mostFrequentKeywordForGroup(groupId, NUMBER_OF_GROUP_KEYWORDS, index);
+    if (groupCommonKeywords) {
+        keywords = getKeysFromResponse(groupCommonKeywords);
+    }
+    return keywords;
+}
+
 const getKeysFromResponse = (response) => {
     return response.map(link => link.key);
 }
 
-module.exports = {getInitialKeywordsSuggestion, getKeywordsSuggestion, getGeneralKeywordsSuggestion}
+module.exports = {getInitialKeywordsSuggestion, getKeywordsSuggestion, getGeneralKeywordsSuggestion, getMostFrequentKeywordForGroup}
 

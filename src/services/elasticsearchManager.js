@@ -315,6 +315,24 @@ async function mostFrequentKeywordForUser(userId, limit, index) {
     return result.aggregations.top_keywords.buckets;
 }
 
+async function mostFrequentKeywordForGroup(groupId, limit, index) {
+    const result = await client.search({
+        index,
+        body: {
+            "query": {"term": {groupId}},
+            aggs: {
+                top_keywords: {
+                    terms: {
+                        field: 'keywords.keyword',
+                        size: limit
+                    },
+                }
+            }
+        }
+    });
+    return result.aggregations.top_keywords.buckets;
+}
+
 async function mostFrequentKeywordForUserByPrefix(userId, prefix, limit, index) {
     const result = await client.search({
         index,
@@ -354,5 +372,6 @@ module.exports = {
     getUserDocumentsByHighestClicksCounter,
     getByIds,
     getGroupLinks,
-    userClickedOnLink
+    userClickedOnLink,
+    mostFrequentKeywordForGroup
 };

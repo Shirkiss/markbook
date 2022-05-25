@@ -7,5 +7,7 @@ router.use('/initialKeywordsSuggestion/:userId', [services.setHeaders, keywordsC
 
 router.use('/keywordsSuggestion/:userId/:prefix?', [services.setHeaders, keywordsController.getKeywordsSuggestion]);
 
+router.use('/getMostFrequentKeywordForGroup/:groupId', [services.setHeaders, keywordsController.getMostFrequentKeywordForGroup]);
+
 
 module.exports = router;

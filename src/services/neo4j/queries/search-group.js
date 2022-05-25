@@ -45,7 +45,7 @@ class SearchGroup extends CypherQuery {
         const queries = [
             {
                 name: 'group_search_fulltext',
-                query: `CALL db.index.fulltext.createNodeIndex("group_search_fulltext",["${props.GROUP}"],["groupName"])`,
+                query: `CALL db.index.fulltext.createNodeIndex("group_search_fulltext",["${props.GROUP}"],["groupName", "groupDescription"])`,
             }];
 
         const indexes = await this._getIndexes(txc);

@@ -24,8 +24,20 @@ async function getKeywordsSuggestion(req, res, next) {
     next();
 }
 
+async function getMostFrequentKeywordForGroup(req, res, next) {
+    try {
+        const {groupId} = req.params;
+        const keywords = await keywordsSuggestionService.getMostFrequentKeywordForGroup(groupId, ELASTICSEARCH_LINKS_INDEX);
+        res.send(keywords);
+    } catch (error) {
+        res.status(500).send({message: 'Failed to send most frequent keywords for group', error});
+    }
+    next();
+}
+
 
 module.exports = {
     getInitialKeywordsSuggestion,
-    getKeywordsSuggestion
+    getKeywordsSuggestion,
+    getMostFrequentKeywordForGroup
 }
