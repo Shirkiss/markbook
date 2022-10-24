@@ -135,7 +135,8 @@ async function searchAll(req, res, next) {
 async function getMostClickedLinks(req, res, next) {
     try {
         const {userId} = req.params;
-        const links = await elasticsearchManager.getUserDocumentsByHighestClicksCounter(userId, ELASTICSEARCH_LINKS_INDEX);
+        const {from, size} = req.body;
+        const links = await elasticsearchManager.getUserDocumentsByHighestClicksCounter(userId, ELASTICSEARCH_LINKS_INDEX, from, size);
         res.send(links);
     } catch (error) {
         res.status(500).send({message: 'Failed to get user documents by highest clicks counter', error});

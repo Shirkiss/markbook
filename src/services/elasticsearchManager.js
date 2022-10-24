@@ -165,9 +165,11 @@ async function prefixSearch(prefix, index, field, userId) {
     return result.hits.hits;
 }
 
-async function getUserDocumentsByHighestClicksCounter(userId, index) {
+async function getUserDocumentsByHighestClicksCounter(userId, index, from = 0, size = 8) {
     const result = await client.search({
         index,
+        from,
+        size,
         body: {
             sort: {"clicksCounter": "desc"},
             query: {
